@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --gray: rgb(33, 33, 33);
+  --bg: rgb(26, 26, 26);
+  --black: rgb(0, 0, 0);
+  --white: rgb(255, 255, 255);
+  --text: rgb(222, 222, 222);
+  --border: rgb(43, 43, 43);
+
+  --success: rgb(0, 248, 107);
+  --error: rgb(255, 114, 114);
+  --warning: rgb(255, 220, 62);
+  --info: rgb(58, 193, 255);
+
+  --accent: rgb(0, 0, 255);
+
+  --transition: all 0.3s ease;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-gray: var(--gray);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-accent: var(--accent);
+}
+
+body {
+  background: var(--bg);
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  
+}
+
+p, a{
+  font-size: 1rem;
+  line-height: 1.6rem;
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+  /* text-align: justify; */
+
+}
+
+.btn-primary{
+  background-color: var(--white);
+  color: var(--black);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition : var(--transition);
+  text-decoration: none;
+
+  &:hover{
+    background: var(--black);
+    color: var(--white);
+    transform: scale(1.05);
+  }
+}
