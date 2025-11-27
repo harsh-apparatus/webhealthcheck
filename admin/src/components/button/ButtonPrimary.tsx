@@ -10,6 +10,8 @@ interface ButtonPrimaryProps {
   link?: string;
   target?: string;
   className?: string;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 const ButtonPrimary = ({
@@ -19,6 +21,8 @@ const ButtonPrimary = ({
   link,
   target,
   className,
+  type = "button",
+  disabled = false,
 }: ButtonPrimaryProps) => {
   const baseClasses =
     " btn-primary";
@@ -41,7 +45,12 @@ const ButtonPrimary = ({
   }
 
   return (
-    <button type="button" onClick={onclick} className={combinedClasses}>
+    <button 
+      type={type} 
+      onClick={onclick} 
+      className={combinedClasses}
+      disabled={disabled}
+    >
       {icon && <span>{icon}</span>}
       <span>{name}</span>
     </button>

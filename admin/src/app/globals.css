@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --gray: rgb(33, 33, 33);
+  --gray: rgb(30, 30, 30);
   --bg: rgb(26, 26, 26);
   --black: rgb(0, 0, 0);
   --white: rgb(255, 255, 255);
   --text: rgb(222, 222, 222);
-  --border: rgb(43, 43, 43);
+  --border: rgb(63, 63, 63);
 
   --success: rgb(0, 248, 107);
   --error: rgb(255, 114, 114);
   --warning: rgb(255, 220, 62);
   --info: rgb(58, 193, 255);
 
-  --accent: rgb(0, 0, 255);
+  --accent: rgb(115, 0, 255);
 
   --transition: all 0.3s ease;
 }
@@ -28,37 +28,96 @@
   --color-warning: var(--warning);
   --color-info: var(--info);
   --color-accent: var(--accent);
+  --color-accent-grad: var(--accent-grad);
 }
 
 body {
   background: var(--bg);
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text);
-  
 }
 
-p, a{
+p,
+a {
   font-size: 1rem;
   line-height: 1.6rem;
   letter-spacing: 0.05em;
   text-wrap: pretty;
+  font-weight: 300;
   /* text-align: justify; */
-
 }
 
-.btn-primary{
+.btn-primary {
   background-color: var(--white);
   color: var(--black);
-  padding: 0.5rem 1rem;
+  padding: 0.33rem 1rem;
   border-radius: 0.25rem;
   border: none;
   cursor: pointer;
-  transition : var(--transition);
+  transition: var(--transition);
   text-decoration: none;
 
-  &:hover{
+  &:hover:not(:disabled) {
     background: var(--black);
     color: var(--white);
-    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--bg);
+  color: var(--text);
+  transition: var(--transition);
+}
+
+.card-highlight {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--gray);
+  color: var(--text);
+  transition: var(--transition);
+}
+
+.accent-grad {
+  background: linear-gradient(to right, rgb(77, 1, 171), rgb(117, 1, 167));
+}
+
+.h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--white) !important;
+}
+
+.h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--white) !important;
+}
+
+.parent {
+  width: 100%;
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
