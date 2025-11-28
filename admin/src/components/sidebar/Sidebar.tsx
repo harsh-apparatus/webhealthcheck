@@ -10,7 +10,6 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Upgrade from "../upgrade/Upgrade";
 
-
 interface SidebarProps {
   isCollapsed: boolean;
 }
@@ -42,10 +41,13 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
   ];
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-60'} h-screen bg-gray border-r border-border flex flex-col justify-between transition-all duration-300`}>
-      <div className={`border-b border-border pb-4 h-16 ${isCollapsed ? 'px-2' : 'px-8'} py-4`}>
+    <div
+      className={`${isCollapsed ? "w-16" : "w-60"} h-[100%] bg-gray border-r border-border flex flex-col justify-between transition-all duration-300`}
+    >
+      <div
+        className={`border-b border-border pb-4 h-16 ${isCollapsed ? "px-2" : "px-8"} py-4`}
+      >
         <div className={`relative  p-4`}>
-         
           {isCollapsed ? (
             <Image src="/logoWhite.svg" alt="Latenzo Console" fill />
           ) : (
@@ -55,7 +57,9 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
       </div>
 
       <div className="flex flex-col justify-between h-full">
-        <nav className={`p-4 flex flex-col gap-2 ${isCollapsed ? 'items-center' : ''}`}>
+        <nav
+          className={`p-4 flex flex-col gap-2 ${isCollapsed ? "items-center" : ""}`}
+        >
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -91,8 +95,10 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
                   "data-tooltip-arrow-offset-y": 10,
                 })}
               >
-                <Icon className={`${isCollapsed ? 'w-6 h-6' : 'w-6 h-6'}`} />
-                {!isCollapsed && <span className="text-sm font-normal">{item.name}</span>}
+                <Icon className={`${isCollapsed ? "w-6 h-6" : "w-6 h-6"}`} />
+                {!isCollapsed && (
+                  <span className="text-sm font-normal">{item.name}</span>
+                )}
               </Link>
             );
           })}

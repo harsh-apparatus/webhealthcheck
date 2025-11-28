@@ -4,8 +4,8 @@ import Header from "@/components/header/Header";
 import Sidebar from "@/components/sidebar/Sidebar";
 import Loader from "@/components/loader/Loader";
 import { LoaderProvider, useLoader } from "@/contexts/LoaderContext";
-import 'react-tooltip/dist/react-tooltip.css'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import "react-tooltip/dist/react-tooltip.css";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 function DashboardContent({
   children,
@@ -19,11 +19,14 @@ function DashboardContent({
     <>
       <ReactTooltip id="my-tooltip" />
       <Loader isLoading={isLoading} />
-      <div className="flex">
+      <div className="flex h-[calc(100vh-64px)]">
         <Sidebar isCollapsed={isCollapsed} />
-        <div className="flex flex-col w-full">
-          <Header toggleSidebar={() => setIsCollapsed(!isCollapsed)} isCollapsed={isCollapsed} />
-          <div className="parent">
+        <div className="flex flex-col w-full ">
+          <Header
+            toggleSidebar={() => setIsCollapsed(!isCollapsed)}
+            isCollapsed={isCollapsed}
+          />
+          <div className="parent h-[calc(100%-64px)] overflow-y-auto">
             <div className="container">{children}</div>
           </div>
         </div>

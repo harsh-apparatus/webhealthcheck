@@ -1,16 +1,36 @@
 "use client";
 
-import ButtonPrimary from "@/components/button/ButtonPrimary";
+import { SignIn } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const page = () => {
-  const handleClick = () => {
-    console.log("Button clicked!");
-    alert("Button clicked!");
-  };
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [isSignedIn, isLoaded, router]);
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (isSignedIn) {
+    return null;
+  }
 
   return (
-    <div>
-      <ButtonPrimary name="Click me" onclick={handleClick} />
+    <div className="flex items-center justify-center min-h-screen">
+      <SignIn
+        routing="path"
+        path="/"
+        signUpUrl="/sign-up"
+        redirectUrl="/dashboard"
+      />
     </div>
   );
 };

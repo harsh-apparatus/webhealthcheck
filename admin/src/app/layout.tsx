@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Latenzo Console",
@@ -15,9 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased h-screen w-screen overflow-hidden`}>
-      
-            {children}
-    
+        <ClerkProvider>{children}</ClerkProvider>
       </body>
     </html>
   );

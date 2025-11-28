@@ -24,8 +24,7 @@ const ButtonPrimary = ({
   type = "button",
   disabled = false,
 }: ButtonPrimaryProps) => {
-  const baseClasses =
-    " btn-primary";
+  const baseClasses = " btn-primary flex items-center gap-2";
   const combinedClasses = className
     ? `${baseClasses} ${className}`
     : baseClasses;
@@ -45,9 +44,9 @@ const ButtonPrimary = ({
   }
 
   return (
-    <button 
-      type={type} 
-      onClick={onclick} 
+    <button
+      type={type}
+      onClick={onclick}
       className={combinedClasses}
       disabled={disabled}
     >
@@ -58,4 +57,3 @@ const ButtonPrimary = ({
 };
 
 export default ButtonPrimary;
-
