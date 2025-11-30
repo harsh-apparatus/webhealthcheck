@@ -41,7 +41,7 @@ function DashboardContent({
     <>
       <ReactTooltip id="my-tooltip" />
       <Loader isLoading={isLoading} />
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex h-[calc(100vh)]">
         <Sidebar isCollapsed={isCollapsed} />
         <div className="flex flex-col w-full ">
           <Header

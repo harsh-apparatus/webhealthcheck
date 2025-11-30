@@ -4,11 +4,19 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ButtonPrimary from "@/components/button/ButtonPrimary";
+import JSConfetti from "js-confetti";
 
 const SignupSuccessPage = () => {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+
+  const jsConfetti = new JSConfetti();
+
+  jsConfetti.addConfetti({
+    confettiRadius: 6,
+    confettiNumber: 100,
+  })
 
   useEffect(() => {
     // If not signed in, redirect to sign-in
@@ -22,7 +30,7 @@ const SignupSuccessPage = () => {
       const accountCreatedAt = user.createdAt.getTime();
       const now = Date.now();
       const accountAge = now - accountCreatedAt;
-      
+
       // If account was created more than 2 minutes ago, it's an existing account
       // Redirect directly to dashboard (they tried to sign up with existing credentials)
       if (accountAge > 120000) {
@@ -57,31 +65,7 @@ const SignupSuccessPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen w-full p-4">
       <div className="flex flex-col items-center justify-center text-center max-w-md">
-        <div
-          className="text-6xl mb-6"
-          style={{
-            background:
-              "linear-gradient(to right, rgb(77, 1, 171), rgb(117, 1, 167))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          ✨
-        </div>
-
-        <h1
-          className="text-4xl font-bold mb-4"
-          style={{
-            background:
-              "linear-gradient(to right, rgb(77, 1, 171), rgb(117, 1, 167))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          Welcome, {userName}!
-        </h1>
+        <h1 className="text-4xl font-bold mb-4">Welcome, {userName}!</h1>
 
         <p className="text-xl mb-2 opacity-90">
           Your account has been successfully created.
@@ -103,4 +87,3 @@ const SignupSuccessPage = () => {
 };
 
 export default SignupSuccessPage;
-

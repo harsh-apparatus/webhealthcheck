@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.35.5",
     "@tanstack/react-table": "^8.21.3",
+    "js-confetti": "^0.13.1",
     "ldrs": "^1.1.9",
     "next": "16.0.4",
     "react": "19.2.0",

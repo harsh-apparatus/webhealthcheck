@@ -98,7 +98,7 @@ const page = () => {
             href={info.getValue()}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent hover:underline"
+            className=" hover:underline"
           >
             {info.getValue()}
           </a>
@@ -258,7 +258,7 @@ const page = () => {
           />
         </div>
 
-        <p className="text-xs! text-center bg-white/10 p-2 rounded-md">
+        <p className="text-xs! text-center bg-white/10 p-2 rounded-md shadow1">
           {" "}
           Last updated on{" "}
           <span className="text-accent!">
@@ -267,7 +267,7 @@ const page = () => {
         </p>
       </div>
 
-      <div className="card">
+      <div className="card mt-6 ">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

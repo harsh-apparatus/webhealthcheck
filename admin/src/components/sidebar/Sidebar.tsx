@@ -78,7 +78,7 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
                     : "gap-3 px-3 py-2.5"
                 } ${
                   isActive
-                    ? "accent-grad text-white"
+                    ? "accent-grad text-white shadow1"
                     : "text-white hover:bg-[rgb(40,40,40)]"
                 }`}
                 title={isCollapsed ? item.name : undefined}
