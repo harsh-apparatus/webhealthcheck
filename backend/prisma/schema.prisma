@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -8,4 +6,61 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+
+
+model User {
+  id            Int        @id @default(autoincrement())
+  clerkId       String     @unique            
+  email         String?
+  firstName     String?
+  lastName      String?
+  plan          String?    
+  stripeCustomerId String? 
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  subscriptions Subscription[]
+  monitors      Monitor[]  
+}
+
+model Subscription {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  clerkSubscriptionId String? 
+  tier               String? 
+  status             String?  
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+
+model Monitor {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  url       String
+  interval  Int     // in seconds
+  status    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User @relation(fields: [userId], references: [id])
+  logs      CheckLog[]
+}
+
+model CheckLog {
+  id         Int      @id @default(autoincrement())
+  monitorId  Int
+  statusCode Int?
+  latencyMs  Int?
+  success    Boolean
+  checkedAt  DateTime
+  monitor    Monitor @relation(fields: [monitorId], references: [id])
+}
+
+
+// ngrok http --url=https://fallon-cicatricial-hubristically.ngrok-free.dev 3000
 
