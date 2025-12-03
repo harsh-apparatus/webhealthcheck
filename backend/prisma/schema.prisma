@@ -114,8 +114,8 @@ model StatusPageMonitor {
   displayOrder Int      @default(0) // Order in which monitors appear
   createdAt   DateTime  @default(now())
 
-  statusPage StatusPage @relation(fields: [statusPageId], references: [id], onDelete: CASCADE)
-  monitor    Monitor    @relation(fields: [monitorId], references: [id], onDelete: CASCADE)
+  statusPage StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  monitor    Monitor    @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
   @@unique([statusPageId, monitorId])
   @@index([statusPageId])

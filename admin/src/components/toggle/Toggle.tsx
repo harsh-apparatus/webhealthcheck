@@ -7,8 +7,9 @@ const Toggle = ({ isChecked, onChange ,onText,offText }: { isChecked: boolean, o
   const [toggle, setToggle] = useState(false);
 
   const handleChange = () => {
-    setToggle(!toggle);
-    onChange(toggle);
+    const newValue = !toggle;
+    setToggle(newValue);
+    onChange(newValue);
   }
 
   return (
