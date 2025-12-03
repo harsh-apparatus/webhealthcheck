@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/header/Header";
 import Sidebar from "@/components/sidebar/Sidebar";
 import Loader from "@/components/loader/Loader";
+import Notification from "@/components/notification/Notification";
 import { LoaderProvider, useLoader } from "@/contexts/LoaderContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
@@ -41,6 +43,7 @@ function DashboardContent({
     <>
       <ReactTooltip id="my-tooltip" />
       <Loader isLoading={isLoading} />
+      <Notification />
       <div className="flex h-[calc(100vh)]">
         <Sidebar isCollapsed={isCollapsed} />
         <div className="flex flex-col w-full ">
@@ -66,7 +69,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased h-screen w-screen overflow-hidden`}>
         <LoaderProvider>
-          <DashboardContent>{children}</DashboardContent>
+          <NotificationProvider>
+            <DashboardContent>{children}</DashboardContent>
+          </NotificationProvider>
         </LoaderProvider>
       </body>
     </html>

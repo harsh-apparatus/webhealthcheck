@@ -2,31 +2,35 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node  src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma": "prisma"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^4.13.23",
     "@clerk/express": "^1.7.53",
-    "@prisma/adapter-pg": "^7.0.1",
-    "@prisma/client": "^7.0.1",
+    "@prisma/client": "^6.19.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "node-cron": "^3.0.3",
     "pg": "^8.16.3",
+    "svix": "^1.81.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
     "@types/node": "^24.10.1",
-    "@types/pg": "^8.15.6",
-    "nodemon": "^3.1.11",
-    "prisma": "^7.0.1"
+    "@types/node-cron": "^3.0.11",
+    "prisma": "^6.19.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }

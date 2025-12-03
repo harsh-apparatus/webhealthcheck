@@ -1,7 +1,128 @@
-import React from "react";
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import ButtonPrimary from "@/components/button/ButtonPrimary";
+import { FaArrowLeft } from "react-icons/fa";
+import { createMonitor } from "@/lib/api/monitors";
+import { ApiError } from "@/lib/api";
+import Toggle from "@/components/toggle/Toggle";
+import { useNotification } from "@/contexts/NotificationContext";
+import { useLoader } from "@/contexts/LoaderContext";
 
 const page = () => {
-  return <div>page</div>;
+  const { getToken } = useAuth();
+  const { showNotification } = useNotification();
+  const { setLoading } = useLoader();
+  const [formData, setFormData] = useState({
+    name: "",
+    url: "",
+    isHttps: true,
+  });
+  const [loading, setLocalLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLocalLoading(true);
+    setLoading(true);
+
+    try {
+      const token = await getToken();
+
+      if (!token) {
+        showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+        setLocalLoading(false);
+        setLoading(false);
+        return;
+      }
+
+      // Use the API service
+      const data = await createMonitor(
+        {
+          name: formData.name,
+          url: formData.url,
+          isHttps: formData.isHttps,
+        },
+        token
+      );
+
+      showNotification("Changes saved", "success", "Website monitor created successfully!");
+      // Reset form on success
+      setFormData({ name: "", url: "", isHttps: true });
+    } catch (err) {
+      const apiError = err as ApiError;
+      // Prefer detail over error for more specific messages (e.g., subscription limits)
+      const errorMessage = apiError.detail || apiError.error || "An error occurred while creating the monitor";
+      showNotification("Failed to create monitor", "error", errorMessage);
+      console.error("API Error:", err);
+    } finally {
+      setLocalLoading(false);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <div>
+        <div className="flex justify-between my-10 items-center border-b border-border pb-4">
+          <h1 className="h2 ">Add Website</h1>
+
+          <ButtonPrimary
+            name="Back"
+            icon={<FaArrowLeft />}
+            link="/dashboard/websites"
+          />
+        </div>
+      </div>
+
+      <div className="card  p-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-start">
+          <div className="flex flex-col gap-2 w-full">
+            <label htmlFor="name" > Website Name <span>*</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="e.g., My Website"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 w-full">
+            <label htmlFor="url"> Website URL <span >*</span> </label>
+            <input
+              id="url"
+              type="url"
+              value={formData.url}
+              onChange={(e) => {
+                const url = e.target.value;
+                setFormData({
+                  ...formData,
+                  url,
+                  isHttps: url.startsWith("https://"),
+                });
+              }}
+              placeholder="https://example.com"
+              required
+             
+            />
+          </div>
+          <Toggle isChecked={formData.isHttps} onChange={(checked) => setFormData({ ...formData, isHttps: checked })} onText="HTTPS" offText="HTTP" />
+  
+        <ButtonPrimary
+            name={loading ? "Creating..." : "Create Website"}
+            type="submit"
+            disabled={loading}
+            className="mt-4"
+          />
+        </form>
+      </div>
+    </>
+  );
 };
 
 export default page;

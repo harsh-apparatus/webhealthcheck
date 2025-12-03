@@ -1,66 +1,123 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-
-
+/// ----------------- USERS -----------------
 model User {
-  id            Int        @id @default(autoincrement())
-  clerkId       String     @unique            
-  email         String?
-  firstName     String?
-  lastName      String?
-  plan          String?    
-  stripeCustomerId String? 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  subscriptions Subscription[]
-  monitors      Monitor[]  
+  id        Int      @id @default(autoincrement())
+  clerkId   String?  @unique
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  monitors      Monitor[] // one-to-many: User -> Monitor
+  subscriptions Subscription[] // one-to-many: User -> Subscription
+  statusPages   StatusPage[] // one-to-many: User -> StatusPage
+
+  @@index([clerkId])
 }
 
-model Subscription {
-  id                 Int      @id @default(autoincrement())
-  userId             Int
-  clerkSubscriptionId String? 
-  tier               String? 
-  status             String?  
-  currentPeriodEnd   DateTime?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+/// ----------------- MONITORS -----------------
+model Monitor {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  url       String
+  isHttps   Boolean  @map("https")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  // relations
+  user            User                @relation(fields: [userId], references: [id])
+  history         HistoryLog[]         // one-to-many: Monitor -> HistoryLog
+  statusPages     StatusPageMonitor[] // many-to-many: Monitor -> StatusPage
 
   @@index([userId])
 }
 
+/// ----------------- SUBSCRIPTIONS / PLANS -----------------
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
 
-model Monitor {
-  id        Int     @id @default(autoincrement())
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+  TRIALING
+}
+
+model Subscription {
+  id        Int                @id @default(autoincrement())
   userId    Int
-  url       String
-  interval  Int     // in seconds
-  status    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User @relation(fields: [userId], references: [id])
-  logs      CheckLog[]
+  plan      Plan
+  status    SubscriptionStatus @default(ACTIVE)
+  startedAt DateTime           @default(now())
+  expiresAt DateTime? // null for non-expiring
+  metadata  Json?
+  createdAt DateTime           @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([plan])
+  @@index([status])
 }
 
-model CheckLog {
-  id         Int      @id @default(autoincrement())
-  monitorId  Int
-  statusCode Int?
-  latencyMs  Int?
-  success    Boolean
-  checkedAt  DateTime
-  monitor    Monitor @relation(fields: [monitorId], references: [id])
+/// ----------------- HISTORY LOGS -----------------
+model HistoryLog {
+  id          Int      @id @default(autoincrement())
+  monitorId   Int
+  pingMs      Int? // response time in ms
+  statusCode  Int? // HTTP status code if available
+  isUp        Boolean
+  bodySnippet String? // short snippet or error message
+  createdAt   DateTime @default(now())
+
+  monitor Monitor @relation(fields: [monitorId], references: [id])
+
+  @@index([monitorId, createdAt])
+  @@index([createdAt])
 }
 
+/// ----------------- STATUS PAGES -----------------
+model StatusPage {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String   // Status page name/title
+  slug        String   @unique // URL slug for public access
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-// ngrok http --url=https://fallon-cicatricial-hubristically.ngrok-free.dev 3000
+  user     User                @relation(fields: [userId], references: [id])
+  monitors StatusPageMonitor[] // many-to-many: StatusPage -> Monitor
 
+  @@index([userId])
+  @@index([slug])
+}
+
+model StatusPageMonitor {
+  id          Int       @id @default(autoincrement())
+  statusPageId Int
+  monitorId   Int
+  displayOrder Int      @default(0) // Order in which monitors appear
+  createdAt   DateTime  @default(now())
+
+  statusPage StatusPage @relation(fields: [statusPageId], references: [id], onDelete: CASCADE)
+  monitor    Monitor    @relation(fields: [monitorId], references: [id], onDelete: CASCADE)
+
+  @@unique([statusPageId, monitorId])
+  @@index([statusPageId])
+  @@index([monitorId])
+}

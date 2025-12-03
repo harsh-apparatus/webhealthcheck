@@ -13,6 +13,7 @@
     "@clerk/nextjs": "^6.35.5",
     "@stripe/stripe-js": "^8.5.3",
     "@tanstack/react-table": "^8.21.3",
+    "antd": "^6.0.1",
     "js-confetti": "^0.13.1",
     "ldrs": "^1.1.9",
     "next": "16.0.4",

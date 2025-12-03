@@ -2,8 +2,8 @@
 import {
   HiOutlineSquares2X2,
   HiOutlineGlobeAlt,
-  HiOutlineDocumentText,
   HiOutlineCog,
+  HiOutlineSignal,
 } from "react-icons/hi2";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,9 +29,9 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
       path: "/dashboard/websites",
     },
     {
-      name: "Logs",
-      icon: HiOutlineDocumentText,
-      path: "/dashboard/logs",
+      name: "Status Pages",
+      icon: HiOutlineSignal,
+      path: "/dashboard/status-pages",
     },
     {
       name: "Settings",
