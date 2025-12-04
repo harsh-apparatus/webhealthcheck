@@ -20,6 +20,11 @@ app.use(
 );
 app.use(express.json());
 
+// Root route to check if webworker is working
+app.get("/", (_req, res) => {
+  res.send("latenzo webworker is working");
+});
+
 app.use("/", pingRoutes);
 
 app.get("/health", (_req, res) => {

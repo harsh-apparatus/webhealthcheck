@@ -26,6 +26,11 @@ app.use(
 );
 app.use(express.json());
 
+// Root route to check if backend is working
+app.get("/", (_req, res) => {
+  res.send("latenzo backend is working");
+});
+
 // Log routes (no auth required - called by webworker/cron jobs)
 app.use("/api", logRoutes);
 
