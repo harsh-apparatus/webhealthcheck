@@ -1,6 +1,9 @@
-import { Router } from "express";
 import { requireAuth } from "@clerk/express";
-import { getWebworkerStatus, testWebworker } from "../controllers/webworkerController";
+import { Router } from "express";
+import {
+  getWebworkerStatus,
+  testWebworker,
+} from "../controllers/webworkerController";
 
 const router = Router();
 
@@ -9,4 +12,3 @@ router.get("/status", requireAuth(), getWebworkerStatus);
 router.post("/test", requireAuth(), testWebworker);
 
 export default router;
-

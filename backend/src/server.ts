@@ -1,7 +1,7 @@
 import "dotenv/config";
 import app from "./app";
-import prisma from "./prismaClient";
 import { initializeAllMonitors } from "./cron/monitorScheduler";
+import prisma from "./prismaClient";
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5001;
 

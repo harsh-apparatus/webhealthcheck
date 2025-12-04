@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import prisma from "../prismaClient";
 import { getAuth } from "@clerk/express";
+import type { Request, Response } from "express";
+import prisma from "../prismaClient";
 
 /**
  * Get detailed information about a monitor including statistics
@@ -21,8 +21,8 @@ export const getMonitorDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const monitorId = parseInt(req.params.id);
-    if (isNaN(monitorId)) {
+    const monitorId = parseInt(req.params.id, 10);
+    if (Number.isNaN(monitorId)) {
       return res.status(400).json({ error: "Invalid monitor ID" });
     }
 
@@ -124,4 +124,3 @@ export const getMonitorDetails = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "db error", detail: String(err) });
   }
 };
-

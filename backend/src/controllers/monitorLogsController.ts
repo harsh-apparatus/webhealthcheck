@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
-import prisma from "../prismaClient";
 import { getAuth } from "@clerk/express";
+import type { Prisma } from "@prisma/client";
+import type { Request, Response } from "express";
+import prisma from "../prismaClient";
 
 /**
  * Get paginated logs for a monitor
@@ -21,8 +22,8 @@ export const getMonitorLogs = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const monitorId = parseInt(req.params.id);
-    if (isNaN(monitorId)) {
+    const monitorId = parseInt(req.params.id, 10);
+    if (Number.isNaN(monitorId)) {
       return res.status(400).json({ error: "Invalid monitor ID" });
     }
 
@@ -39,8 +40,8 @@ export const getMonitorLogs = async (req: Request, res: Response) => {
     }
 
     // Parse query parameters
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100); // Max 100 per page
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string, 10) || 50, 100); // Max 100 per page
     const skip = (page - 1) * limit;
 
     // Get filter parameters
@@ -49,7 +50,7 @@ export const getMonitorLogs = async (req: Request, res: Response) => {
     const endDate = req.query.endDate as string | undefined;
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.HistoryLogWhereInput = {
       monitorId,
     };
 
@@ -59,18 +60,14 @@ export const getMonitorLogs = async (req: Request, res: Response) => {
       where.isUp = false;
     }
 
-    if (startDate) {
-      where.createdAt = {
-        ...where.createdAt,
-        gte: new Date(startDate),
-      };
-    }
-
-    if (endDate) {
-      where.createdAt = {
-        ...where.createdAt,
-        lte: new Date(endDate),
-      };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate);
+      }
     }
 
     // Get logs with pagination
@@ -113,4 +110,3 @@ export const getMonitorLogs = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "db error", detail: String(err) });
   }
 };
-

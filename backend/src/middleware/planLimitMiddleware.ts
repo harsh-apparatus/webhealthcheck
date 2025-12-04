@@ -1,14 +1,28 @@
-import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
+import type { Plan } from "@prisma/client";
+import type { NextFunction, Request, Response } from "express";
+import {
+  canAddWebsite,
+  getTierLimits,
+  hasPublicStatusPage,
+  type TierLimits,
+} from "../config/appConfiguration";
 import prisma from "../prismaClient";
 import { getUserPlan } from "../services/subscriptionService";
-import { canAddWebsite, getTierLimits, hasPublicStatusPage } from "../config/appConfiguration";
-import { Plan } from "@prisma/client";
 
 export interface PlanLimitCheck {
   checkWebsiteLimit?: boolean;
   checkStatusPageAccess?: boolean;
-  customCheck?: (plan: Plan, userId: number) => Promise<boolean | { allowed: boolean; error: string }>;
+  customCheck?: (
+    plan: Plan,
+    userId: number,
+  ) => Promise<boolean | { allowed: boolean; error: string }>;
+}
+
+export interface RequestWithPlanInfo extends Request {
+  userPlan: Plan;
+  userLimits: TierLimits;
+  userId: number;
 }
 
 /**
@@ -40,7 +54,7 @@ export const checkPlanLimits = (checks: PlanLimitCheck) => {
         });
 
         if (!canAddWebsite(currentMonitorCount, userPlan)) {
-          const errorMessage = `Your ${userPlan} plan allows ${limits.maxWebsites} website${limits.maxWebsites === 1 ? '' : 's'} maximum. Please upgrade your plan to add more websites.`;
+          const errorMessage = `Your ${userPlan} plan allows ${limits.maxWebsites} website${limits.maxWebsites === 1 ? "" : "s"} maximum. Please upgrade your plan to add more websites.`;
           return res.status(403).json({
             error: "Website limit reached",
             detail: errorMessage,
@@ -57,7 +71,8 @@ export const checkPlanLimits = (checks: PlanLimitCheck) => {
         if (!hasPublicStatusPage(userPlan)) {
           return res.status(403).json({
             error: "Public status pages are not available on your plan",
-            detail: "Please upgrade to PRO or ENTERPRISE plan to use public status pages.",
+            detail:
+              "Please upgrade to PRO or ENTERPRISE plan to use public status pages.",
             plan: userPlan,
           });
         }
@@ -82,15 +97,16 @@ export const checkPlanLimits = (checks: PlanLimitCheck) => {
       }
 
       // Attach plan info to request for use in controllers
-      (req as any).userPlan = userPlan;
-      (req as any).userLimits = limits;
-      (req as any).userId = user.id;
+      (req as RequestWithPlanInfo).userPlan = userPlan;
+      (req as RequestWithPlanInfo).userLimits = limits;
+      (req as RequestWithPlanInfo).userId = user.id;
 
       next();
     } catch (err) {
       console.error("checkPlanLimits middleware error:", err);
-      return res.status(500).json({ error: "Internal server error", detail: String(err) });
+      return res
+        .status(500)
+        .json({ error: "Internal server error", detail: String(err) });
     }
   };
 };
-

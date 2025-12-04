@@ -1,5 +1,5 @@
-import prisma from "../prismaClient";
 import { Plan, SubscriptionStatus } from "@prisma/client";
+import prisma from "../prismaClient";
 
 /**
  * Get the active subscription plan for a user
@@ -21,4 +21,3 @@ export async function getUserPlan(userId: number): Promise<Plan> {
 
   return subscription?.plan || Plan.FREE;
 }
-

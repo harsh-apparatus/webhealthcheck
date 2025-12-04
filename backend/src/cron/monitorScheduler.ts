@@ -1,8 +1,8 @@
 import cron from "node-cron";
-import prisma from "../prismaClient";
-import { executePingJob } from "./pingJob";
-import { getUserPlan } from "../services/subscriptionService";
 import { getPingIntervalSeconds } from "../config/appConfiguration";
+import prisma from "../prismaClient";
+import { getUserPlan } from "../services/subscriptionService";
+import { executePingJob } from "./pingJob";
 
 // Map to store active cron jobs: monitorId -> cron task
 const activeJobs = new Map<number, cron.ScheduledTask>();
@@ -64,15 +64,17 @@ export async function scheduleMonitor(monitorId: number): Promise<void> {
       {
         scheduled: true,
         timezone: "UTC",
-      }
+      },
     );
 
     activeJobs.set(monitorId, task);
     console.log(
-      `Scheduled monitor ${monitorId} (plan: ${plan}, interval: ${intervalSeconds}s, cron: ${cronExpression})`
+      `Scheduled monitor ${monitorId} (plan: ${plan}, interval: ${intervalSeconds}s, cron: ${cronExpression})`,
     );
-  } catch (error: any) {
-    console.error(`Error scheduling monitor ${monitorId}:`, error.message);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error(`Error scheduling monitor ${monitorId}:`, errorMessage);
   }
 }
 
@@ -105,8 +107,10 @@ export async function initializeAllMonitors(): Promise<void> {
     }
 
     console.log(`Initialized ${monitors.length} monitor schedules`);
-  } catch (error: any) {
-    console.error("Error initializing monitors:", error.message);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("Error initializing monitors:", errorMessage);
   }
 }
 
@@ -123,4 +127,3 @@ export async function rescheduleMonitor(monitorId: number): Promise<void> {
 export function getActiveMonitorIds(): number[] {
   return Array.from(activeJobs.keys());
 }
-

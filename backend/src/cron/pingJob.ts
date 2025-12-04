@@ -45,41 +45,53 @@ export async function executePingJob(monitorId: number): Promise<void> {
 
     // Store the result via backend API
     // monitorId is in the URL path, ping result data goes in the body
-    const logResponse = await fetch(`${BACKEND_URL}/api/monitors/${monitorId}/ping`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const logResponse = await fetch(
+      `${BACKEND_URL}/api/monitors/${monitorId}/ping`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pingMs: pingResult.pingMs,
+          statusCode: pingResult.statusCode,
+          isUp: pingResult.isUp,
+          bodySnippet: pingResult.bodySnippet,
+          error: pingResult.error,
+        }),
       },
-      body: JSON.stringify({
-        pingMs: pingResult.pingMs,
-        statusCode: pingResult.statusCode,
-        isUp: pingResult.isUp,
-        bodySnippet: pingResult.bodySnippet,
-        error: pingResult.error,
-      }),
-    });
+    );
 
     if (!logResponse.ok) {
       const errorText = await logResponse.text();
-      throw new Error(`Log storage failed: ${logResponse.statusText} - ${errorText}`);
+      throw new Error(
+        `Log storage failed: ${logResponse.statusText} - ${errorText}`,
+      );
     }
 
-    const logData = await logResponse.json();
+    const _logData = await logResponse.json();
     console.log(
       `Ping completed for monitor ${monitorId}: ${pingResult.isUp ? "UP" : "DOWN"} ` +
-      `(${pingResult.pingMs}ms, status: ${pingResult.statusCode || "N/A"})`
+        `(${pingResult.pingMs}ms, status: ${pingResult.statusCode || "N/A"})`,
     );
-  } catch (error: any) {
-    console.error(`Error executing ping job for monitor ${monitorId}:`, error.message);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      `Error executing ping job for monitor ${monitorId}:`,
+      errorMessage,
+    );
     // Log error to database if possible (optional - don't fail if this fails)
     try {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       await prisma.historyLog.create({
         data: {
           monitorId,
           pingMs: null,
           statusCode: null,
           isUp: false,
-          bodySnippet: `Error: ${error.message}`,
+          bodySnippet: `Error: ${errorMessage}`,
         },
       });
     } catch (logError) {
@@ -88,4 +100,3 @@ export async function executePingJob(monitorId: number): Promise<void> {
     }
   }
 }
-

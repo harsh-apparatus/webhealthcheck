@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
+import type { Request, Response } from "express";
 
 const WEBWORKER_URL = process.env.WEBWORKER_URL || "http://localhost:4001";
 
@@ -46,13 +46,17 @@ export const getWebworkerStatus = async (req: Request, res: Response) => {
           error: `Health check returned ${healthResponse.status}`,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Webworker is not accessible
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Webworker service is not accessible";
       return res.status(200).json({
         status: "offline",
         url: WEBWORKER_URL,
         lastChecked: new Date().toISOString(),
-        error: error.message || "Webworker service is not accessible",
+        error: errorMessage,
       });
     }
   } catch (err) {
@@ -114,11 +118,15 @@ export const testWebworker = async (req: Request, res: Response) => {
           detail: errorText,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to connect to webworker service";
       return res.status(500).json({
         success: false,
         error: "Webworker is not accessible",
-        detail: error.message || "Failed to connect to webworker service",
+        detail: errorMessage,
       });
     }
   } catch (err) {
@@ -129,4 +137,3 @@ export const testWebworker = async (req: Request, res: Response) => {
     });
   }
 };
-

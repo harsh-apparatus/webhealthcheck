@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
-import prisma from "../prismaClient";
 import { getAuth } from "@clerk/express";
-import { getUserPlan } from "../services/subscriptionService";
+import type { Prisma } from "@prisma/client";
+import type { Request, Response } from "express";
 import { hasPublicStatusPage } from "../config/appConfiguration";
+import prisma from "../prismaClient";
+import { getUserPlan } from "../services/subscriptionService";
 
 /**
  * Get all status pages for the authenticated user
@@ -62,8 +63,8 @@ export const getStatusPage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const statusPageId = parseInt(req.params.id);
-    if (isNaN(statusPageId)) {
+    const statusPageId = parseInt(req.params.id, 10);
+    if (Number.isNaN(statusPageId)) {
       return res.status(400).json({ error: "Invalid status page ID" });
     }
 
@@ -118,7 +119,8 @@ export const createStatusPage = async (req: Request, res: Response) => {
     if (!hasPublicStatusPage(userPlan)) {
       return res.status(403).json({
         error: "Public status pages are not available on your plan",
-        detail: "Please upgrade to PRO or ENTERPRISE plan to use public status pages.",
+        detail:
+          "Please upgrade to PRO or ENTERPRISE plan to use public status pages.",
       });
     }
 
@@ -132,7 +134,8 @@ export const createStatusPage = async (req: Request, res: Response) => {
     if (!/^[a-z0-9-]+$/.test(slug)) {
       return res.status(400).json({
         error: "Invalid slug format",
-        detail: "Slug must contain only lowercase letters, numbers, and hyphens",
+        detail:
+          "Slug must contain only lowercase letters, numbers, and hyphens",
       });
     }
 
@@ -149,13 +152,15 @@ export const createStatusPage = async (req: Request, res: Response) => {
     if (monitorIds && Array.isArray(monitorIds) && monitorIds.length > 0) {
       const monitors = await prisma.monitor.findMany({
         where: {
-          id: { in: monitorIds.map((id: string) => parseInt(id)) },
+          id: { in: monitorIds.map((id: string) => parseInt(id, 10)) },
           userId: user.id,
         },
       });
 
       if (monitors.length !== monitorIds.length) {
-        return res.status(400).json({ error: "Some monitors not found or don't belong to you" });
+        return res
+          .status(400)
+          .json({ error: "Some monitors not found or don't belong to you" });
       }
     }
 
@@ -166,10 +171,12 @@ export const createStatusPage = async (req: Request, res: Response) => {
         name,
         slug,
         monitors: {
-          create: (monitorIds || []).map((monitorId: string, index: number) => ({
-            monitorId: parseInt(monitorId),
-            displayOrder: index,
-          })),
+          create: (monitorIds || []).map(
+            (monitorId: string, index: number) => ({
+              monitorId: parseInt(monitorId, 10),
+              displayOrder: index,
+            }),
+          ),
         },
       },
       include: {
@@ -209,8 +216,8 @@ export const updateStatusPage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const statusPageId = parseInt(req.params.id);
-    if (isNaN(statusPageId)) {
+    const statusPageId = parseInt(req.params.id, 10);
+    if (Number.isNaN(statusPageId)) {
       return res.status(400).json({ error: "Invalid status page ID" });
     }
 
@@ -233,7 +240,8 @@ export const updateStatusPage = async (req: Request, res: Response) => {
       if (!/^[a-z0-9-]+$/.test(slug)) {
         return res.status(400).json({
           error: "Invalid slug format",
-          detail: "Slug must contain only lowercase letters, numbers, and hyphens",
+          detail:
+            "Slug must contain only lowercase letters, numbers, and hyphens",
         });
       }
 
@@ -250,18 +258,20 @@ export const updateStatusPage = async (req: Request, res: Response) => {
     if (monitorIds && Array.isArray(monitorIds)) {
       const monitors = await prisma.monitor.findMany({
         where: {
-          id: { in: monitorIds.map((id: string) => parseInt(id)) },
+          id: { in: monitorIds.map((id: string) => parseInt(id, 10)) },
           userId: user.id,
         },
       });
 
       if (monitors.length !== monitorIds.length) {
-        return res.status(400).json({ error: "Some monitors not found or don't belong to you" });
+        return res
+          .status(400)
+          .json({ error: "Some monitors not found or don't belong to you" });
       }
     }
 
     // Update status page
-    const updateData: any = {};
+    const updateData: Prisma.StatusPageUpdateInput = {};
     if (name !== undefined) updateData.name = name;
     if (slug !== undefined) updateData.slug = slug;
     if (isActive !== undefined) updateData.isActive = isActive;
@@ -277,7 +287,7 @@ export const updateStatusPage = async (req: Request, res: Response) => {
       await prisma.statusPageMonitor.createMany({
         data: monitorIds.map((monitorId: string, index: number) => ({
           statusPageId,
-          monitorId: parseInt(monitorId),
+          monitorId: parseInt(monitorId, 10),
           displayOrder: index,
         })),
       });
@@ -323,8 +333,8 @@ export const deleteStatusPage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const statusPageId = parseInt(req.params.id);
-    if (isNaN(statusPageId)) {
+    const statusPageId = parseInt(req.params.id, 10);
+    if (Number.isNaN(statusPageId)) {
       return res.status(400).json({ error: "Invalid status page ID" });
     }
 
@@ -343,7 +353,9 @@ export const deleteStatusPage = async (req: Request, res: Response) => {
       where: { id: statusPageId },
     });
 
-    return res.status(200).json({ message: "Status page deleted successfully" });
+    return res
+      .status(200)
+      .json({ message: "Status page deleted successfully" });
   } catch (err) {
     console.error("deleteStatusPage error:", err);
     return res.status(500).json({ error: "db error", detail: String(err) });
@@ -392,7 +404,7 @@ export const getPublicStatusPage = async (req: Request, res: Response) => {
     const monitorsWithStats = await Promise.all(
       statusPage.monitors.map(async (spm) => {
         const monitor = spm.monitor;
-        
+
         // Get logs from last 30 days
         const logs = await prisma.historyLog.findMany({
           where: {
@@ -406,7 +418,8 @@ export const getPublicStatusPage = async (req: Request, res: Response) => {
 
         const totalPings = logs.length;
         const upPings = logs.filter((log) => log.isUp).length;
-        const uptimePercentage = totalPings > 0 ? (upPings / totalPings) * 100 : 100;
+        const uptimePercentage =
+          totalPings > 0 ? (upPings / totalPings) * 100 : 100;
 
         // Create 30-day uptime bar data (one data point per day)
         const uptimeBarData = [];
@@ -418,9 +431,10 @@ export const getPublicStatusPage = async (req: Request, res: Response) => {
           nextDate.setDate(nextDate.getDate() + 1);
 
           const dayLogs = logs.filter(
-            (log) => log.createdAt >= date && log.createdAt < nextDate
+            (log) => log.createdAt >= date && log.createdAt < nextDate,
           );
-          const dayUp = dayLogs.length > 0 ? dayLogs.every((log) => log.isUp) : null;
+          const dayUp =
+            dayLogs.length > 0 ? dayLogs.every((log) => log.isUp) : null;
           uptimeBarData.push({
             date: date.toISOString(),
             isUp: dayUp,
@@ -437,7 +451,7 @@ export const getPublicStatusPage = async (req: Request, res: Response) => {
           uptimePercentage: uptimePercentage.toFixed(3),
           uptimeBarData,
         };
-      })
+      }),
     );
 
     return res.status(200).json({
@@ -453,4 +467,3 @@ export const getPublicStatusPage = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "db error", detail: String(err) });
   }
 };
-

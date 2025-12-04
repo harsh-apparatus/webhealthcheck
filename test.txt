@@ -1,0 +1,23 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name webworker.latenzo.aspltools.in www.webworker.latenzo.aspltools.in;
+
+    # Redirect www → non-www (optional but recommended)
+    if ($host = www.webworker.latenzo.aspltools.in) {
+        return 301 http://webworker.latenzo.aspltools.in$request_uri;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:4001;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_read_timeout 90s;
+        proxy_send_timeout 90s;
+    }
+}

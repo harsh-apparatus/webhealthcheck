@@ -8,4 +8,3 @@ const router = Router();
 router.post("/monitors/:id/ping", logPingResult);
 
 export default router;
-

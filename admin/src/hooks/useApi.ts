@@ -59,3 +59,4 @@ export function useApi<T>() {
     clearError: () => setError(null),
   };
 }
+

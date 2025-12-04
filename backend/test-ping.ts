@@ -6,10 +6,12 @@
 import "dotenv/config";
 import { executePingJob } from "./src/cron/pingJob";
 
-const monitorId = process.argv[2] ? parseInt(process.argv[2]) : 1;
+const monitorId = process.argv[2] ? parseInt(process.argv[2], 10) : 1;
 
-if (isNaN(monitorId)) {
-  console.error("Invalid monitor ID. Usage: npx ts-node test-ping.ts <monitorId>");
+if (Number.isNaN(monitorId)) {
+  console.error(
+    "Invalid monitor ID. Usage: npx ts-node test-ping.ts <monitorId>",
+  );
   process.exit(1);
 }
 
@@ -24,4 +26,3 @@ executePingJob(monitorId)
     console.error("Ping job failed:", error);
     process.exit(1);
   });
-

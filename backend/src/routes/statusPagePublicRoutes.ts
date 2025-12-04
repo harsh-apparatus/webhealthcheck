@@ -7,4 +7,3 @@ const router = Router();
 router.get("/public/:slug", getPublicStatusPage);
 
 export default router;
-

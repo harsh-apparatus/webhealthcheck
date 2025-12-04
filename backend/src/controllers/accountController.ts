@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
+import { Plan, SubscriptionStatus } from "@prisma/client";
+import type { Request, Response } from "express";
+import { getTierLimits } from "../config/appConfiguration";
 import prisma from "../prismaClient";
 import { getUserPlan } from "../services/subscriptionService";
-import { getTierLimits } from "../config/appConfiguration";
-import { SubscriptionStatus, Plan } from "@prisma/client";
 
 /**
  * Get account information including subscription plan and limits
@@ -59,7 +59,8 @@ export const getAccountInfo = async (req: Request, res: Response) => {
     const formatLogRetention = (seconds: number): string => {
       const days = Math.floor(seconds / (24 * 60 * 60));
       if (days < 30) return `${days} day${days === 1 ? "" : "s"}`;
-      if (days < 365) return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"}`;
+      if (days < 365)
+        return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"}`;
       return `${Math.floor(days / 365)} year${Math.floor(days / 365) === 1 ? "" : "s"}`;
     };
 
@@ -147,7 +148,8 @@ export const getPlanDetails = async (req: Request, res: Response) => {
     const formatLogRetention = (seconds: number): string => {
       const days = Math.floor(seconds / (24 * 60 * 60));
       if (days < 30) return `${days} day${days === 1 ? "" : "s"}`;
-      if (days < 365) return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"}`;
+      if (days < 365)
+        return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"}`;
       return `${Math.floor(days / 365)} year${Math.floor(days / 365) === 1 ? "" : "s"}`;
     };
 
@@ -170,8 +172,13 @@ export const getPlanDetails = async (req: Request, res: Response) => {
       },
       usage: {
         websitesUsed: totalMonitorsCount,
-        websitesRemaining: limits.maxWebsites === null ? null : Math.max(0, limits.maxWebsites - totalMonitorsCount),
-        canAddMore: limits.maxWebsites === null || totalMonitorsCount < limits.maxWebsites,
+        websitesRemaining:
+          limits.maxWebsites === null
+            ? null
+            : Math.max(0, limits.maxWebsites - totalMonitorsCount),
+        canAddMore:
+          limits.maxWebsites === null ||
+          totalMonitorsCount < limits.maxWebsites,
       },
     });
   } catch (err) {
@@ -208,7 +215,9 @@ export const syncSubscription = async (req: Request, res: Response) => {
     // Validate plan value
     const validPlans: Plan[] = [Plan.FREE, Plan.PRO, Plan.ENTERPRISE];
     if (!validPlans.includes(planFromRequest as Plan)) {
-      return res.status(400).json({ error: "Invalid plan. Must be FREE, PRO, or ENTERPRISE" });
+      return res
+        .status(400)
+        .json({ error: "Invalid plan. Must be FREE, PRO, or ENTERPRISE" });
     }
 
     const plan = planFromRequest as Plan;
@@ -258,7 +267,9 @@ export const syncSubscription = async (req: Request, res: Response) => {
       },
     });
 
-    console.log(`Synced ${plan} subscription for user ${user.id} (clerkId=${clerkId}, subscription ID: ${subscription.id})`);
+    console.log(
+      `Synced ${plan} subscription for user ${user.id} (clerkId=${clerkId}, subscription ID: ${subscription.id})`,
+    );
 
     return res.status(200).json({
       message: "Subscription synced successfully",
@@ -270,4 +281,3 @@ export const syncSubscription = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "db error", detail: String(err) });
   }
 };
-

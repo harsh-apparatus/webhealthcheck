@@ -1,27 +1,25 @@
-import express from "express";
+import { clerkMiddleware } from "@clerk/express";
 import cors from "cors";
+import express from "express";
+import logRoutes from "./routes/logRoutes";
+import monitorRoutes from "./routes/monitorRoutes";
+import statusPagePublicRoutes from "./routes/statusPagePublicRoutes";
+import statusPageRoutes from "./routes/statusPageRoutes";
 import userRoutes from "./routes/userRoutes";
 import webhookRoutes from "./routes/webhookRoutes";
-import logRoutes from "./routes/logRoutes";
-import statusPageRoutes from "./routes/statusPageRoutes";
-import statusPagePublicRoutes from "./routes/statusPagePublicRoutes";
 import webworkerRoutes from "./routes/webworkerRoutes";
-
-
-import { clerkMiddleware } from "@clerk/express";
-import monitorRoutes from "./routes/monitorRoutes";
 
 const app = express();
 
-
 app.use("/webhook", express.raw({ type: () => true }));
 
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(express.json());
 
 // Log routes (no auth required - called by webworker/cron jobs)
@@ -32,7 +30,6 @@ app.use("/api/status-pages", statusPagePublicRoutes);
 
 app.use(clerkMiddleware());
 
-
 app.use("/api/users", userRoutes);
 app.use("/api/monitors", monitorRoutes);
 app.use("/api/status-pages", statusPageRoutes);
@@ -40,8 +37,7 @@ app.use("/api/webworker", webworkerRoutes);
 
 app.use("/webhook", webhookRoutes);
 
-
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 

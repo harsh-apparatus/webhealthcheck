@@ -1,9 +1,13 @@
-import { Request, Response } from "express";
-import prisma from "../prismaClient";
 import { getAuth } from "@clerk/express";
-import { getUserPlan } from "../services/subscriptionService";
+import type { Request, Response } from "express";
 import { canAddWebsite, getTierLimits } from "../config/appConfiguration";
-import { scheduleMonitor, stopMonitor, rescheduleMonitor } from "../cron/monitorScheduler";
+import {
+  rescheduleMonitor,
+  scheduleMonitor,
+  stopMonitor,
+} from "../cron/monitorScheduler";
+import prisma from "../prismaClient";
+import { getUserPlan } from "../services/subscriptionService";
 
 export const createMonitor = async (req: Request, res: Response) => {
   try {
@@ -38,7 +42,7 @@ export const createMonitor = async (req: Request, res: Response) => {
 
     if (!canAddWebsite(currentMonitorCount, userPlan)) {
       const limits = getTierLimits(userPlan);
-      const errorMessage = `Your ${userPlan} plan allows ${limits.maxWebsites} website${limits.maxWebsites === 1 ? '' : 's'} maximum. Please upgrade your plan to add more websites.`;
+      const errorMessage = `Your ${userPlan} plan allows ${limits.maxWebsites} website${limits.maxWebsites === 1 ? "" : "s"} maximum. Please upgrade your plan to add more websites.`;
       return res.status(403).json({
         error: "Website limit reached",
         detail: errorMessage,
@@ -139,8 +143,8 @@ export const getMonitor = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const monitorId = parseInt(req.params.id);
-    if (isNaN(monitorId)) {
+    const monitorId = parseInt(req.params.id, 10);
+    if (Number.isNaN(monitorId)) {
       return res.status(400).json({ error: "Invalid monitor ID" });
     }
 
@@ -203,8 +207,8 @@ export const updateMonitor = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const monitorId = parseInt(req.params.id);
-    if (isNaN(monitorId)) {
+    const monitorId = parseInt(req.params.id, 10);
+    if (Number.isNaN(monitorId)) {
       return res.status(400).json({ error: "Invalid monitor ID" });
     }
 
@@ -224,7 +228,9 @@ export const updateMonitor = async (req: Request, res: Response) => {
 
     // Validate that at least one field is provided
     if (!name && !url && isHttps === undefined) {
-      return res.status(400).json({ error: "At least one field (name, url, isHttps) must be provided" });
+      return res.status(400).json({
+        error: "At least one field (name, url, isHttps) must be provided",
+      });
     }
 
     // Validate URL if provided
@@ -253,7 +259,8 @@ export const updateMonitor = async (req: Request, res: Response) => {
       }
     }
     if (isHttps !== undefined) updateData.isHttps = isHttps;
-    if (req.body.isActive !== undefined) updateData.isActive = req.body.isActive;
+    if (req.body.isActive !== undefined)
+      updateData.isActive = req.body.isActive;
 
     const monitor = await prisma.monitor.update({
       where: { id: monitorId },
@@ -275,7 +282,10 @@ export const updateMonitor = async (req: Request, res: Response) => {
         // Stop cron job if monitor is deactivated
         stopMonitor(monitorId);
       }
-    } else if (updateData.url !== undefined || updateData.isHttps !== undefined) {
+    } else if (
+      updateData.url !== undefined ||
+      updateData.isHttps !== undefined
+    ) {
       // Reschedule if URL or HTTPS changed (might affect ping behavior)
       await rescheduleMonitor(monitorId);
     }
@@ -322,8 +332,8 @@ export const deleteMonitor = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const monitorId = parseInt(req.params.id);
-    if (isNaN(monitorId)) {
+    const monitorId = parseInt(req.params.id, 10);
+    if (Number.isNaN(monitorId)) {
       return res.status(400).json({ error: "Invalid monitor ID" });
     }
 
@@ -347,9 +357,9 @@ export const deleteMonitor = async (req: Request, res: Response) => {
       where: { id: monitorId },
     });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Monitor deleted successfully",
-      id: monitorId 
+      id: monitorId,
     });
   } catch (err) {
     console.error("deleteMonitor error:", err);

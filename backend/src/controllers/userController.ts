@@ -1,8 +1,7 @@
-
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import prisma from "../prismaClient";
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (_req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
     return res.json({ users });
@@ -11,7 +10,6 @@ export const getUsers = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "db error", detail: String(err) });
   }
 };
-
 
 export const createUser = async (req: Request, res: Response) => {
   try {

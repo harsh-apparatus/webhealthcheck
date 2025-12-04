@@ -1,18 +1,21 @@
 // src/routes/webhookRoutes.ts
-import { Router } from "express";
-import prisma from "../prismaClient";
-import { Webhook } from "svix";
-import { Request, Response } from "express";
+
 import { Plan, SubscriptionStatus } from "@prisma/client";
+import { type Request, type Response, Router } from "express";
+import { Webhook } from "svix";
+import prisma from "../prismaClient";
 
 const router = Router();
 
 /**
  * Sync subscription from Clerk publicMetadata
  */
-async function syncSubscriptionFromMetadata(userId: number, publicMetadata: any) {
+async function syncSubscriptionFromMetadata(
+  userId: number,
+  publicMetadata: Record<string, unknown>,
+) {
   const planFromMetadata = publicMetadata?.plan as string | undefined;
-  
+
   if (!planFromMetadata) {
     console.log(`No plan found in metadata for user ${userId}`);
     return;
@@ -21,7 +24,9 @@ async function syncSubscriptionFromMetadata(userId: number, publicMetadata: any)
   // Validate plan value
   const validPlans: Plan[] = [Plan.FREE, Plan.PRO, Plan.ENTERPRISE];
   if (!validPlans.includes(planFromMetadata as Plan)) {
-    console.warn(`Invalid plan in metadata: ${planFromMetadata} for user ${userId}`);
+    console.warn(
+      `Invalid plan in metadata: ${planFromMetadata} for user ${userId}`,
+    );
     return;
   }
 
@@ -69,7 +74,9 @@ async function syncSubscriptionFromMetadata(userId: number, publicMetadata: any)
     },
   });
 
-  console.log(`Created ${plan} subscription for user ${userId} (subscription ID: ${subscription.id})`);
+  console.log(
+    `Created ${plan} subscription for user ${userId} (subscription ID: ${subscription.id})`,
+  );
 }
 
 router.post("/clerk", async (req: Request, res: Response) => {
@@ -82,14 +89,21 @@ router.post("/clerk", async (req: Request, res: Response) => {
 
     const rawBodyBuffer: Buffer = Buffer.isBuffer(req.body)
       ? req.body
-      : Buffer.from(typeof req.body === "string" ? req.body : JSON.stringify(req.body));
+      : Buffer.from(
+          typeof req.body === "string" ? req.body : JSON.stringify(req.body),
+        );
 
     console.log("Webhook incoming headers:", {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
-      "svix-signature": req.headers["svix-signature"]?.toString?.().slice(0, 80),
+      "svix-signature": req.headers["svix-signature"]
+        ?.toString?.()
+        .slice(0, 80),
     });
-    console.log("Webhook raw body (snippet):", rawBodyBuffer.toString("utf8", 0, 200));
+    console.log(
+      "Webhook raw body (snippet):",
+      rawBodyBuffer.toString("utf8", 0, 200),
+    );
 
     const svixHeaders = {
       "svix-id": (req.headers["svix-id"] as string) ?? "",
@@ -98,14 +112,24 @@ router.post("/clerk", async (req: Request, res: Response) => {
     };
 
     const wh = new Webhook(WEBHOOK_SECRET);
-    const evt = wh.verify(rawBodyBuffer, svixHeaders);
+    const evt = wh.verify(rawBodyBuffer, svixHeaders) as {
+      type: string;
+      data: {
+        id: string;
+        email_addresses?: Array<{ email_address?: string }>;
+        first_name?: string;
+        public_metadata?: Record<string, unknown>;
+      };
+    };
 
     const { type, data } = evt;
 
     if (type === "user.created" || type === "user.updated") {
       const email = data?.email_addresses?.[0]?.email_address ?? null;
       const name = data?.first_name ?? null;
-      const publicMetadata = data?.public_metadata as any;
+      const publicMetadata = data?.public_metadata as
+        | Record<string, unknown>
+        | undefined;
 
       // Build create/update objects only with defined fields
       const createData: { clerkId: string; email?: string; name?: string } = {
@@ -124,7 +148,9 @@ router.post("/clerk", async (req: Request, res: Response) => {
         create: createData,
       });
 
-      console.log(`User synced: ${user.email ?? "(no email)"} (clerkId=${user.clerkId})`);
+      console.log(
+        `User synced: ${user.email ?? "(no email)"} (clerkId=${user.clerkId})`,
+      );
 
       // Sync subscription from Clerk publicMetadata
       if (publicMetadata) {
@@ -133,9 +159,11 @@ router.post("/clerk", async (req: Request, res: Response) => {
     }
 
     return res.status(200).json({ received: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Webhook error:", err);
-    return res.status(400).json({ error: "Invalid webhook", detail: String(err) });
+    return res
+      .status(400)
+      .json({ error: "Invalid webhook", detail: String(err) });
   }
 });
 

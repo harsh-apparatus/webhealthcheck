@@ -1,7 +1,11 @@
-import { Router } from "express";
 import { requireAuth } from "@clerk/express";
-import { getUsers, createUser } from "../controllers/userController";
-import { getAccountInfo, getPlanDetails, syncSubscription } from "../controllers/accountController";
+import { Router } from "express";
+import {
+  getAccountInfo,
+  getPlanDetails,
+  syncSubscription,
+} from "../controllers/accountController";
+import { createUser, getUsers } from "../controllers/userController";
 
 const router = Router();
 
