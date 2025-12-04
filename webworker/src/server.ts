@@ -9,9 +9,13 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 4001;
 
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "https://console.latenzo.aspltools.in",
+      "http://localhost:3000", // Allow localhost for development
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   }),
 );
 app.use(express.json());

@@ -2,15 +2,15 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name webworker.latenzo.aspltools.in www.webworker.latenzo.aspltools.in;
+    server_name console.latenzo.aspltools.in www.console.latenzo.aspltools.in;
 
     # Redirect www → non-www (optional but recommended)
-    if ($host = www.webworker.latenzo.aspltools.in) {
-        return 301 http://webworker.latenzo.aspltools.in$request_uri;
+    if ($host = www.console.latenzo.aspltools.in) {
+        return 301 http://console.latenzo.aspltools.in$request_uri;
     }
 
     location / {
-        proxy_pass http://127.0.0.1:4001;
+        proxy_pass http://127.0.0.1:3001;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -21,3 +21,11 @@ server {
         proxy_send_timeout 90s;
     }
 }
+
+
+
+
+    sudo ln -s /etc/nginx/sites-available/webworker.latenzo.aspltools.in /etc/nginx/sites-enabled/
+
+
+sudo certbot --nginx -d webworker.latenzo.aspltools.in -d www.webworker.latenzo.aspltools.in
