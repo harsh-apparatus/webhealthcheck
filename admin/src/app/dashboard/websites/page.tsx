@@ -20,35 +20,59 @@ const page = () => {
   const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setLoading(true);
         const token = await getToken();
         
+        if (!token) {
+          throw new Error("Authentication token not available");
+        }
+        
+        console.log("Fetching monitors and account info...");
+        
         // Fetch monitors and account info in parallel
         const [monitorsResponse, accountResponse] = await Promise.all([
           getMonitors(token),
-          getAccountInfo(token).catch(() => null), // Don't fail if account info fails
+          getAccountInfo(token).catch((err) => {
+            console.warn("Failed to fetch account info:", err);
+            return null;
+          }),
         ]);
         
+        if (!isMounted) return;
+        
+        console.log("Monitors fetched:", monitorsResponse.monitors.length);
         setMonitors(monitorsResponse.monitors);
         if (accountResponse) {
           setAccountInfo(accountResponse);
         }
       } catch (err) {
+        if (!isMounted) return;
+        
+        console.error("Failed to fetch monitors:", err);
         const apiError = err as ApiError;
         const errorMessage =
-          apiError.error || apiError.detail || "Failed to fetch websites";
+          apiError.error || apiError.detail || (err instanceof Error ? err.message : "Failed to fetch websites");
         showNotification("Error", "error", errorMessage);
-        console.error("Failed to fetch monitors:", err);
+        // Ensure monitors is set to empty array on error
+        setMonitors([]);
       } finally {
-        setIsLoading(false);
-        setLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [getToken, showNotification, setLoading]);
 
   // Use accountInfo count if available (more accurate), otherwise use monitors.length

@@ -23,9 +23,9 @@ export class ApiClient {
    */
   async request<T>(
     endpoint: string,
-    options: RequestInit & { token?: string | null } = {}
+    options: RequestInit & { token?: string | null; timeout?: number } = {}
   ): Promise<T> {
-    const { token, ...fetchOptions } = options;
+    const { token, timeout = 30000, ...fetchOptions } = options;
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -38,11 +38,18 @@ export class ApiClient {
 
     const url = `${this.baseUrl}${endpoint}`;
 
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
     try {
       const response = await fetch(url, {
         ...fetchOptions,
         headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Handle non-JSON responses
       const contentType = response.headers.get("content-type");
@@ -62,12 +69,30 @@ export class ApiClient {
 
       return data as T;
     } catch (error) {
+      // Clear timeout on error
+      clearTimeout(timeoutId);
+      
+      // Handle abort (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw {
+          error: "Request timeout",
+          detail: `The request took longer than ${timeout}ms to complete. Please check your network connection and backend server.`,
+        } as ApiError;
+      }
+      
       // If it's already an ApiError object, throw it as-is
       if (error && typeof error === 'object' && 'error' in error) {
         throw error;
       }
       // If it's a regular Error instance, convert it
       if (error instanceof Error) {
+        // Check for common network errors
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          throw {
+            error: "Network error",
+            detail: `Unable to connect to backend server at ${this.baseUrl}. Please ensure the backend is running and accessible.`,
+          } as ApiError;
+        }
         throw {
           error: "Network error",
           detail: error.message,

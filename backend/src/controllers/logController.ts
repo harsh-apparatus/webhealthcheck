@@ -36,13 +36,14 @@ export const logPingResult = async (req: Request, res: Response) => {
     }
 
     // Create history log entry
+    // Only store bodySnippet when there's an error (isUp === false) to reduce storage overhead
     const historyLog = await prisma.historyLog.create({
       data: {
         monitorId,
         pingMs,
         statusCode,
         isUp,
-        bodySnippet: bodySnippet || error || null,
+        bodySnippet: isUp === false ? (bodySnippet || error || null) : null,
       },
     });
 

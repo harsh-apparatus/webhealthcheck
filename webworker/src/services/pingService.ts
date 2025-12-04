@@ -50,15 +50,18 @@ export async function pingUrl(request: PingRequest): Promise<PingResponse> {
       statusCode = response.status;
       isUp = response.ok; // 200-299 status codes
 
-      // Try to get body snippet if response is text
-      try {
-        const contentType = response.headers.get("content-type") || "";
-        if (contentType.includes("text/") || contentType.includes("application/json")) {
-          const text = await response.text();
-          bodySnippet = text.substring(0, MAX_BODY_SNIPPET_LENGTH);
+      // Only capture body snippet when there's an error (response is not OK)
+      // This reduces storage overhead while still providing debugging info for failures
+      if (!isUp) {
+        try {
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.includes("text/") || contentType.includes("application/json")) {
+            const text = await response.text();
+            bodySnippet = text.substring(0, MAX_BODY_SNIPPET_LENGTH);
+          }
+        } catch (bodyError) {
+          // Ignore body reading errors
         }
-      } catch (bodyError) {
-        // Ignore body reading errors
       }
     } catch (fetchError: any) {
       clearTimeout(timeoutId);

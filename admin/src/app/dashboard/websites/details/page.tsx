@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import ButtonPrimary from "@/components/button/ButtonPrimary";
+import DeleteConfirmModal from "@/components/modal/DeleteConfirmModal";
 import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaTrash, FaEdit, FaLock, FaUnlock } from "react-icons/fa";
 import {
   getMonitorDetails,
@@ -32,6 +33,7 @@ const page = () => {
   const [fetching, setFetching] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -110,12 +112,12 @@ const page = () => {
     fetchLogs();
   }, [monitorId, currentPage, getToken, showNotification]);
 
-  const handleDelete = async () => {
-    if (!monitorId) return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
-    if (!confirm("Are you sure you want to delete this monitor? This action cannot be undone.")) {
-      return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!monitorId) return;
 
     setDeleting(true);
     setLoading(true);
@@ -123,11 +125,13 @@ const page = () => {
       const token = await getToken();
       if (!token) {
         showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+        setShowDeleteModal(false);
         return;
       }
 
       await deleteMonitor(parseInt(monitorId), token);
-      showNotification("Success", "success", "Monitor deleted successfully");
+      showNotification("Success", "success", "Monitor and all associated logs deleted successfully");
+      setShowDeleteModal(false);
       router.push("/dashboard/websites");
     } catch (err) {
       const apiError = err as ApiError;
@@ -169,6 +173,17 @@ const page = () => {
   // Prepare graph data (last 30 logs for visualization)
   const graphData = logs.slice(0, 30).reverse();
   const maxLatency = Math.max(...graphData.map(log => log.latency || 0), 100);
+  
+  // Calculate date range for graph
+  const getDateRange = () => {
+    if (graphData.length === 0) return null;
+    const dates = graphData.map(log => new Date(log.timestamp));
+    const earliest = new Date(Math.min(...dates.map(d => d.getTime())));
+    const latest = new Date(Math.max(...dates.map(d => d.getTime())));
+    return { earliest, latest };
+  };
+  
+  const dateRange = getDateRange();
 
   const logColumns: ColumnType<MonitorLog>[] = [
     {
@@ -176,17 +191,24 @@ const page = () => {
       key: "status",
       dataIndex: "status",
       render: (_, record) => getStatusBadge(record.status),
-      filters: [
-        { text: "Up", value: "up" },
-        { text: "Down", value: "down" },
-      ],
-      onFilter: (value, record) => record.status === value,
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
         <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search status (up/down)"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
               onClick={() => {
-                setSelectedKeys([]);
                 clearFilters?.();
                 confirm();
               }}
@@ -197,6 +219,8 @@ const page = () => {
           </div>
         </div>
       ),
+      onFilter: (value, record) =>
+        record.status.toLowerCase().includes(String(value).toLowerCase()),
     },
     {
       title: "Timestamp",
@@ -256,6 +280,36 @@ const page = () => {
         const bLatency = b.latency ?? 0;
         return aLatency - bLatency;
       },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search response time"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
+              onClick={() => {
+                clearFilters?.();
+                confirm();
+              }}
+              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ),
+      onFilter: (value, record) =>
+        formatLatency(record.latency).toLowerCase().includes(String(value).toLowerCase()),
     },
     {
       title: "Status Code",
@@ -271,12 +325,36 @@ const page = () => {
         const bCode = b.statusCode ?? 0;
         return aCode - bCode;
       },
-      filters: [
-        { text: "200", value: 200 },
-        { text: "404", value: 404 },
-        { text: "500", value: 500 },
-      ],
-      onFilter: (value, record) => record.statusCode === value,
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search status code"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
+              onClick={() => {
+                clearFilters?.();
+                confirm();
+              }}
+              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ),
+      onFilter: (value, record) =>
+        String(record.statusCode || "").includes(String(value)),
     },
     {
       title: "Response",
@@ -353,12 +431,12 @@ const page = () => {
               Edit
             </button>
             <button
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               disabled={deleting}
               className="px-4 py-2 bg-error/20 hover:bg-error/30 border border-error/50 text-error rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <FaTrash />
-              {deleting ? "Deleting..." : "Delete"}
+              Delete
             </button>
             <ButtonPrimary
               name="Back"
@@ -454,78 +532,117 @@ const page = () => {
       </div>
 
       {/* Graph Section */}
-      <div className="card p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Response Time Trend</h2>
+      <div className="card mb-6 w-full">
+        <div className="p-6 pb-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-4">
+            <h2 className="text-xl font-semibold">Response Time Trend</h2>
+            {dateRange && (
+              <div className="text-sm text-text/60 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-text/80">
+                    {dateRange.earliest.toLocaleDateString([], { month: 'short', day: 'numeric' })} {dateRange.earliest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span>→</span>
+                  <span className="text-text/80">
+                    {dateRange.latest.toLocaleDateString([], { month: 'short', day: 'numeric' })} {dateRange.latest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <span className="text-text/60">
+                  ({graphData.length} points)
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
         {graphData.length > 0 ? (
-          <div className="w-full h-64 relative">
-            <svg width="100%" height="100%" className="overflow-visible">
-              <defs>
-                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="var(--success)" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="var(--success)" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {/* Grid lines */}
-              {[0, 25, 50, 75, 100].map((percent) => (
-                <line
-                  key={percent}
-                  x1="0%"
-                  y1={`${percent}%`}
-                  x2="100%"
-                  y2={`${percent}%`}
-                  stroke="var(--border)"
-                  strokeWidth="1"
-                  strokeDasharray="4"
-                />
-              ))}
-              {/* Area under curve */}
-              <path
-                d={`M 0 ${100 - (graphData[0]?.latency || 0) / maxLatency * 100} ${graphData.map((log, i) => {
-                  const x = (i / (graphData.length - 1)) * 100;
-                  const y = 100 - ((log.latency || 0) / maxLatency) * 100;
-                  return `L ${x} ${y}`;
-                }).join(' ')} L ${100} 100 L 0 100 Z`}
-                fill="url(#lineGradient)"
-              />
-              {/* Line */}
-              <polyline
-                points={graphData.map((log, i) => {
-                  const x = (i / (graphData.length - 1 || 1)) * 100;
-                  const y = 100 - ((log.latency || 0) / maxLatency) * 100;
-                  return `${x},${y}`;
-                }).join(' ')}
-                fill="none"
-                stroke="var(--success)"
-                strokeWidth="2"
-              />
-              {/* Data points */}
-              {graphData.map((log, i) => {
-                const x = (i / (graphData.length - 1 || 1)) * 100;
-                const y = 100 - ((log.latency || 0) / maxLatency) * 100;
-                return (
-                  <circle
-                    key={i}
-                    cx={`${x}%`}
-                    cy={`${y}%`}
-                    r="4"
-                    fill={log.status === "up" ? "var(--success)" : "var(--error)"}
-                    stroke="var(--bg)"
+          <div className="px-6 pb-6">
+            <div className="w-full h-64 relative pb-6" style={{ width: '100%' }}>
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-text/60 pr-4 z-10" style={{ width: '60px' }}>
+                <span>{maxLatency}ms</span>
+                <span>{Math.round(maxLatency * 0.75)}ms</span>
+                <span>{Math.round(maxLatency * 0.5)}ms</span>
+                <span>{Math.round(maxLatency * 0.25)}ms</span>
+                <span>0ms</span>
+              </div>
+              {/* Graph SVG - positioned to take remaining space */}
+              <div className="absolute left-0 top-0 right-0 bottom-0" style={{ left: '60px', width: 'calc(100% - 60px)' }}>
+                <svg 
+                  viewBox="0 0 1000 256" 
+                  preserveAspectRatio="none"
+                  style={{ display: 'block', width: '100%', height: '100%' }}
+                >
+                  <defs>
+                    <linearGradient id={`lineGradient-${monitorId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="var(--success)" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="var(--success)" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Grid lines */}
+                  {[0, 25, 50, 75, 100].map((percent) => (
+                    <line
+                      key={percent}
+                      x1="0"
+                      y1={(percent / 100) * 256}
+                      x2="1000"
+                      y2={(percent / 100) * 256}
+                      stroke="var(--border)"
+                      strokeWidth="1"
+                      strokeDasharray="4"
+                    />
+                  ))}
+                  {/* Area under curve */}
+                  <path
+                    d={`M 0 ${256 - ((graphData[0]?.latency || 0) / maxLatency) * 256} ${graphData.map((log, i) => {
+                      const x = (i / (graphData.length - 1 || 1)) * 1000;
+                      const y = 256 - ((log.latency || 0) / maxLatency) * 256;
+                      return `L ${x} ${y}`;
+                    }).join(' ')} L 1000 256 L 0 256 Z`}
+                    fill={`url(#lineGradient-${monitorId})`}
+                  />
+                  {/* Line */}
+                  <polyline
+                    points={graphData.map((log, i) => {
+                      const x = (i / (graphData.length - 1 || 1)) * 1000;
+                      const y = 256 - ((log.latency || 0) / maxLatency) * 256;
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="var(--success)"
                     strokeWidth="2"
                   />
-                );
-              })}
-            </svg>
-            {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-text/60 pr-2">
-              <span>{maxLatency}ms</span>
-              <span>{Math.round(maxLatency * 0.75)}ms</span>
-              <span>{Math.round(maxLatency * 0.5)}ms</span>
-              <span>{Math.round(maxLatency * 0.25)}ms</span>
-              <span>0ms</span>
+                  {/* Data points */}
+                  {graphData.map((log, i) => {
+                    const x = (i / (graphData.length - 1 || 1)) * 1000;
+                    const y = 256 - ((log.latency || 0) / maxLatency) * 256;
+                    return (
+                      <circle
+                        key={i}
+                        cx={x}
+                        cy={y}
+                        r="4"
+                        fill={log.status === "up" ? "var(--success)" : "var(--error)"}
+                        stroke="var(--bg)"
+                        strokeWidth="2"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+              {/* X-axis time labels */}
+              {dateRange && graphData.length > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-text/60 px-0" style={{ left: '60px', width: 'calc(100% - 60px)', paddingTop: '8px' }}>
+                  <span>{dateRange.earliest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {graphData.length > 2 && (
+                    <span>{new Date(graphData[Math.floor(graphData.length / 2)].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  )}
+                  <span>{dateRange.latest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <div className="h-64 flex items-center justify-center text-text/60">
+          <div className="h-64 flex items-center justify-center text-text/60 px-6 pb-6">
             No data available for graph
           </div>
         )}
@@ -545,6 +662,17 @@ const page = () => {
           onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Website Monitor"
+        message="Are you sure you want to delete this website monitor? This will permanently delete:"
+        itemName={monitorDetails ? `${monitorDetails.name} (${monitorDetails.url})` : undefined}
+        isLoading={deleting}
+      />
     </>
   );
 };

@@ -7,13 +7,14 @@ import {
   updateStatusPage,
   deleteStatusPage,
 } from "../controllers/statusPageController";
+import { checkPlanLimits } from "../middleware/planLimitMiddleware";
 
 const router = Router();
 
 // Protected routes (auth required)
 router.get("/", requireAuth(), getStatusPages);
 router.get("/:id", requireAuth(), getStatusPage);
-router.post("/", requireAuth(), createStatusPage);
+router.post("/", requireAuth(), checkPlanLimits({ checkStatusPageAccess: true }), createStatusPage);
 router.put("/:id", requireAuth(), updateStatusPage);
 router.delete("/:id", requireAuth(), deleteStatusPage);
 

@@ -4,6 +4,7 @@ import { createMonitor, getMonitors, getMonitor, updateMonitor, deleteMonitor } 
 import { getMonitorDetails } from "../controllers/monitorDetailsController";
 import { getMonitorLogs } from "../controllers/monitorLogsController";
 import { executePingJob } from "../cron/pingJob";
+import { checkPlanLimits } from "../middleware/planLimitMiddleware";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get("/test", (req: Request, res: Response) => {
 
 // requireAuth() will return 401 for unauthenticated API requests
 router.get("/", requireAuth(), getMonitors);
-router.post("/", requireAuth(), createMonitor);
+router.post("/", requireAuth(), checkPlanLimits({ checkWebsiteLimit: true }), createMonitor);
 // Specific routes must come before /:id route
 router.get("/:id/details", requireAuth(), getMonitorDetails);
 router.get("/:id/logs", requireAuth(), getMonitorLogs);

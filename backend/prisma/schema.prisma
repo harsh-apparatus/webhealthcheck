@@ -84,7 +84,7 @@ model HistoryLog {
   bodySnippet String? // short snippet or error message
   createdAt   DateTime @default(now())
 
-  monitor Monitor @relation(fields: [monitorId], references: [id])
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
   @@index([monitorId, createdAt])
   @@index([createdAt])

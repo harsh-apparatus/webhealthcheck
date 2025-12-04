@@ -3,7 +3,8 @@ import {
   HiOutlineSquares2X2,
   HiOutlineGlobeAlt,
   HiOutlineCog,
-  HiOutlineSignal,
+  HiOutlineDocumentText,
+  HiOutlineBell,
 } from "react-icons/hi2";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,9 +30,14 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
       path: "/dashboard/websites",
     },
     {
-      name: "Status Pages",
-      icon: HiOutlineSignal,
-      path: "/dashboard/status-pages",
+      name: "Logs",
+      icon: HiOutlineDocumentText,
+      path: "/dashboard/logs",
+    },
+    {
+      name: "Alerts",
+      icon: HiOutlineBell,
+      path: "/dashboard/alerts",
     },
     {
       name: "Settings",
@@ -42,7 +48,7 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
 
   return (
     <div
-      className={`${isCollapsed ? "w-16" : "w-60"} h-[100%] bg-gray border-r border-border flex flex-col justify-between transition-all duration-300`}
+      className={`${isCollapsed ? "w-16" : "w-60"} h-full bg-gray border-r border-border flex flex-col justify-between transition-all duration-300`}
     >
       <div
         className={`border-b border-border pb-4 h-16 ${isCollapsed ? "px-2" : "px-8"} py-4`}

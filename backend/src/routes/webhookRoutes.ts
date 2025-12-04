@@ -3,8 +3,74 @@ import { Router } from "express";
 import prisma from "../prismaClient";
 import { Webhook } from "svix";
 import { Request, Response } from "express";
+import { Plan, SubscriptionStatus } from "@prisma/client";
 
 const router = Router();
+
+/**
+ * Sync subscription from Clerk publicMetadata
+ */
+async function syncSubscriptionFromMetadata(userId: number, publicMetadata: any) {
+  const planFromMetadata = publicMetadata?.plan as string | undefined;
+  
+  if (!planFromMetadata) {
+    console.log(`No plan found in metadata for user ${userId}`);
+    return;
+  }
+
+  // Validate plan value
+  const validPlans: Plan[] = [Plan.FREE, Plan.PRO, Plan.ENTERPRISE];
+  if (!validPlans.includes(planFromMetadata as Plan)) {
+    console.warn(`Invalid plan in metadata: ${planFromMetadata} for user ${userId}`);
+    return;
+  }
+
+  const plan = planFromMetadata as Plan;
+
+  // Check if user already has an active subscription with this plan
+  const existingSubscription = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      plan,
+      status: {
+        in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING],
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (existingSubscription) {
+    console.log(`User ${userId} already has active ${plan} subscription`);
+    return;
+  }
+
+  // Deactivate any existing active subscriptions
+  await prisma.subscription.updateMany({
+    where: {
+      userId,
+      status: {
+        in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING],
+      },
+    },
+    data: {
+      status: SubscriptionStatus.CANCELLED,
+    },
+  });
+
+  // Create new subscription
+  const subscription = await prisma.subscription.create({
+    data: {
+      userId,
+      plan,
+      status: SubscriptionStatus.ACTIVE,
+      startedAt: new Date(),
+    },
+  });
+
+  console.log(`Created ${plan} subscription for user ${userId} (subscription ID: ${subscription.id})`);
+}
 
 router.post("/clerk", async (req: Request, res: Response) => {
   try {
@@ -39,6 +105,7 @@ router.post("/clerk", async (req: Request, res: Response) => {
     if (type === "user.created" || type === "user.updated") {
       const email = data?.email_addresses?.[0]?.email_address ?? null;
       const name = data?.first_name ?? null;
+      const publicMetadata = data?.public_metadata as any;
 
       // Build create/update objects only with defined fields
       const createData: { clerkId: string; email?: string; name?: string } = {
@@ -58,6 +125,11 @@ router.post("/clerk", async (req: Request, res: Response) => {
       });
 
       console.log(`User synced: ${user.email ?? "(no email)"} (clerkId=${user.clerkId})`);
+
+      // Sync subscription from Clerk publicMetadata
+      if (publicMetadata) {
+        await syncSubscriptionFromMetadata(user.id, publicMetadata);
+      }
     }
 
     return res.status(200).json({ received: true });

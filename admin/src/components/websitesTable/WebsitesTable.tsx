@@ -183,11 +183,38 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
       key: "isHttps",
       render: (isHttps: boolean) => getHttpsBadge(isHttps),
       sorter: (a, b) => Number(a.isHttps) - Number(b.isHttps),
-      filters: [
-        { text: "HTTPS", value: true },
-        { text: "HTTP", value: false },
-      ],
-      onFilter: (value, record) => record.isHttps === value,
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search protocol (http/https)"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
+              onClick={() => {
+                clearFilters?.();
+                confirm();
+              }}
+              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ),
+      onFilter: (value, record) => {
+        const protocol = record.isHttps ? "https" : "http";
+        return protocol.toLowerCase().includes(String(value).toLowerCase());
+      },
     },
     {
       title: "Last Ping",
@@ -216,21 +243,84 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
         const bLatency = b.lastPing?.latency ?? 0;
         return aLatency - bLatency;
       },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search response time"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
+              onClick={() => {
+                clearFilters?.();
+                confirm();
+              }}
+              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ),
+      onFilter: (value, record) => {
+        if (!record.lastPing) return false;
+        const latencyStr = formatLatency(record.lastPing.latency);
+        const statusCodeStr = record.lastPing.statusCode ? String(record.lastPing.statusCode) : "";
+        return latencyStr.toLowerCase().includes(String(value).toLowerCase()) ||
+               statusCodeStr.includes(String(value));
+      },
     },
     {
       title: "Status",
       key: "status",
       render: (_, record: Monitor) => getStatusBadge(record),
-      filters: [
-        { text: "Up", value: "up" },
-        { text: "Down", value: "down" },
-        { text: "Inactive", value: "inactive" },
-        { text: "No data", value: "nodata" },
-      ],
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Search status (up/down/inactive)"
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => confirm()}
+              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Search
+            </button>
+            <button
+              onClick={() => {
+                clearFilters?.();
+                confirm();
+              }}
+              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ),
       onFilter: (value, record) => {
-        if (!record.isActive) return value === "inactive";
-        if (!record.lastPing) return value === "nodata";
-        return record.lastPing.status === value;
+        let status = "";
+        if (!record.isActive) {
+          status = "inactive";
+        } else if (!record.lastPing) {
+          status = "no data";
+        } else {
+          status = record.lastPing.status;
+        }
+        return status.toLowerCase().includes(String(value).toLowerCase());
       },
     },
     {

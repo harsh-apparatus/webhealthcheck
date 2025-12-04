@@ -95,8 +95,8 @@ a {
 }
 
 .btn-primary {
-  background-color: var(--white);
-  color: var(--black);
+  background: var(--accent-grad);
+  color: var(--white);
   padding: 0.33rem 1rem;
   border-radius: 0.25rem;
   border: none;
@@ -105,8 +105,8 @@ a {
   text-decoration: none;
   box-shadow: var(--shadow1);
   &:hover:not(:disabled) {
-    background: var(--black);
-    color: var(--white);
+    background: var(--white);
+    color: var(--accent);
   }
 
   &:disabled {
