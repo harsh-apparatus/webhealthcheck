@@ -16,7 +16,8 @@
   --accent: rgb(125, 2, 225);
   --accent-grad: linear-gradient(45deg, var(--accent), rgb(64, 2, 119));
   --transition: all 0.3s ease;
-  --shadow1: inset 0 1px 2px #ffffff30, 0 2px 4px #00000030, 0 4px 8px #00000015;
+  --shadow1:
+    inset 0 1px 2px #ffffff30, 0 2px 4px #00000030, 0 4px 8px #00000015;
 }
 
 @theme inline {
@@ -94,6 +95,24 @@ a {
   /* text-align: justify; */
 }
 
+input {
+  background: var(--gray);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  text-wrap: pretty;
+  transition: var(--transition);
+  width: 100%;
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .btn-primary {
   background: var(--accent-grad);
   color: var(--white);
@@ -161,13 +180,13 @@ a {
 .h1 {
   font-size: 2.4rem;
   font-weight: 700;
-  color: var(--white) !important;
+  color: var(--white);
 }
 
 .h2 {
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--white) !important;
+  color: var(--white);
 }
 
 .parent {
@@ -201,24 +220,6 @@ a {
   }
 }
 
-input {
-  background: var(--gray);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  text-wrap: pretty;
-  transition: var(--transition);
-  width: 100%;
-  &:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 label {
   @apply text-sm font-medium pl-2;
 }
@@ -234,21 +235,21 @@ label > span {
 .ant-table-column-sorter-down,
 .ant-table-column-sorter-up.active,
 .ant-table-column-sorter-down.active {
-  color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255);
 }
 
 .ant-table-column-sorter:hover,
 .ant-table-filter-trigger:hover {
-  color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255);
 }
 
 .ant-table-thead > tr > th .ant-table-column-sorter,
 .ant-table-thead > tr > th .ant-table-filter-trigger {
-  color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255);
 }
 
 .ant-table-thead > tr > th .ant-table-column-sorter:hover,
 .ant-table-thead > tr > th .ant-table-filter-trigger:hover {
-  color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255);
   opacity: 0.8;
 }

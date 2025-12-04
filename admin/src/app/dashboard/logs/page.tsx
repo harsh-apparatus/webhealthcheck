@@ -1,22 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { Input, Select } from "antd";
+import { useEffect, useState } from "react";
+import {
+  FaArrowLeft,
+  FaCheckCircle,
+  FaClock,
+  FaTimesCircle,
+} from "react-icons/fa";
+import ButtonPrimary from "@/components/button/ButtonPrimary";
+import CustomTable, {
+  type ColumnType,
+} from "@/components/customTable/CustomTable";
 import { useLoader } from "@/contexts/LoaderContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import { getMonitors, getMonitorLogs, Monitor, MonitorLog } from "@/lib/api/monitors";
-import { ApiError } from "@/lib/api";
-import CustomTable, { ColumnType } from "@/components/customTable/CustomTable";
-import ButtonPrimary from "@/components/button/ButtonPrimary";
-import { FaCheckCircle, FaTimesCircle, FaClock, FaArrowLeft } from "react-icons/fa";
-import { Select, Input } from "antd";
+import type { ApiError } from "@/lib/api";
+import {
+  getMonitorLogs,
+  getMonitors,
+  type Monitor,
+  type MonitorLog,
+} from "@/lib/api/monitors";
 
 const page = () => {
   const { getToken } = useAuth();
   const { setLoading } = useLoader();
   const { showNotification } = useNotification();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
-  const [selectedMonitorId, setSelectedMonitorId] = useState<number | null>(null);
+  const [selectedMonitorId, setSelectedMonitorId] = useState<number | null>(
+    null,
+  );
   const [logs, setLogs] = useState<MonitorLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,7 +61,9 @@ const page = () => {
         console.error("Failed to fetch monitors:", err);
         const apiError = err as ApiError;
         const errorMessage =
-          apiError.error || apiError.detail || (err instanceof Error ? err.message : "Failed to fetch monitors");
+          apiError.error ||
+          apiError.detail ||
+          (err instanceof Error ? err.message : "Failed to fetch monitors");
         showNotification("Error", "error", errorMessage);
       } finally {
         setIsLoading(false);
@@ -81,7 +97,7 @@ const page = () => {
             page: currentPage,
             limit: 50,
           },
-          token
+          token,
         );
         setLogs(data.logs);
         setPagination(data.pagination);
@@ -89,7 +105,9 @@ const page = () => {
         console.error("Failed to fetch logs:", err);
         const apiError = err as ApiError;
         const errorMessage =
-          apiError.error || apiError.detail || (err instanceof Error ? err.message : "Failed to fetch logs");
+          apiError.error ||
+          apiError.detail ||
+          (err instanceof Error ? err.message : "Failed to fetch logs");
         showNotification("Error", "error", errorMessage);
         setLogs([]);
       } finally {
@@ -133,28 +151,51 @@ const page = () => {
       key: "status",
       dataIndex: "status",
       render: (_, record) => getStatusBadge(record.status),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search status (up/down)"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -176,29 +217,53 @@ const page = () => {
           </div>
         </div>
       ),
-      sorter: (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      sorter: (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search timestamp"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -206,7 +271,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        formatDate(record.timestamp).toLowerCase().includes(String(value).toLowerCase()),
+        formatDate(record.timestamp)
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
     {
       title: "Response Time",
@@ -214,7 +281,9 @@ const page = () => {
       dataIndex: "latency",
       render: (_, record) => (
         <div className="text-text">
-          <span className="text-white font-medium">{formatLatency(record.latency)}</span>
+          <span className="text-white font-medium">
+            {formatLatency(record.latency)}
+          </span>
         </div>
       ),
       sorter: (a, b) => {
@@ -222,28 +291,51 @@ const page = () => {
         const bLatency = b.latency ?? 0;
         return aLatency - bLatency;
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search response time"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -251,7 +343,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        formatLatency(record.latency).toLowerCase().includes(String(value).toLowerCase()),
+        formatLatency(record.latency)
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
     {
       title: "Status Code",
@@ -267,28 +361,51 @@ const page = () => {
         const bCode = b.statusCode ?? 0;
         return aCode - bCode;
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search status code"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -309,28 +426,51 @@ const page = () => {
           </span>
         </div>
       ),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search response"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -338,7 +478,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        (record.bodySnippet || "").toLowerCase().includes(String(value).toLowerCase()),
+        (record.bodySnippet || "")
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
   ];
 
@@ -348,17 +490,16 @@ const page = () => {
     <>
       <div className="flex justify-between my-10 items-center border-b border-border pb-4">
         <h1 className="h2">Logs</h1>
-        <ButtonPrimary
-          name="Back"
-          icon={<FaArrowLeft />}
-          link="/dashboard"
-        />
+        <ButtonPrimary name="Back" icon={<FaArrowLeft />} link="/dashboard" />
       </div>
 
       <div className="flex flex-col gap-6">
         <div className="card p-4">
           <div className="flex flex-col gap-4">
-            <label htmlFor="monitor-select" className="text-sm font-medium text-white">
+            <label
+              htmlFor="monitor-select"
+              className="text-sm font-medium text-white"
+            >
               Select Website
             </label>
             <Select
@@ -381,7 +522,10 @@ const page = () => {
             />
             {selectedMonitor && (
               <p className="text-xs text-text">
-                Showing logs for: <span className="text-white font-medium">{selectedMonitor.name}</span>
+                Showing logs for:{" "}
+                <span className="text-white font-medium">
+                  {selectedMonitor.name}
+                </span>
               </p>
             )}
           </div>
@@ -410,4 +554,3 @@ const page = () => {
 };
 
 export default page;
-

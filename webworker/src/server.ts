@@ -1,6 +1,6 @@
 import "dotenv/config";
-import express from "express";
 import cors from "cors";
+import express from "express";
 import pingRoutes from "./routes/pingRoutes";
 
 const app = express();
@@ -12,14 +12,18 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.use(express.json());
 
 app.use("/", pingRoutes);
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", service: "webworker", time: new Date().toISOString() });
+app.get("/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "webworker",
+    time: new Date().toISOString(),
+  });
 });
 
 const server = app.listen(PORT, () => {
@@ -48,4 +52,3 @@ process.on("unhandledRejection", (reason) => {
   console.error("Unhandled rejection:", reason);
   shutdown("unhandledRejection");
 });
-

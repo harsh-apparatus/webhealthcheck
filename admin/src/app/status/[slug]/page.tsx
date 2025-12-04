@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 interface MonitorData {
@@ -32,15 +32,14 @@ const PublicStatusPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchStatusPage();
-  }, [slug]);
-
-  const fetchStatusPage = async () => {
+  const fetchStatusPage = useCallback(async () => {
     try {
       setLoading(true);
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-      const response = await fetch(`${backendUrl}/api/status-pages/public/${slug}`);
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const response = await fetch(
+        `${backendUrl}/api/status-pages/public/${slug}`,
+      );
 
       if (!response.ok) {
         throw new Error("Status page not found");
@@ -49,11 +48,17 @@ const PublicStatusPage = () => {
       const data = await response.json();
       setStatusPage(data.statusPage);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load status page");
+      setError(
+        err instanceof Error ? err.message : "Failed to load status page",
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    fetchStatusPage();
+  }, [fetchStatusPage]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -110,7 +115,9 @@ const PublicStatusPage = () => {
             </div>
           </div>
           <h1 className="text-4xl font-bold mb-2">
-            {allServicesUp ? "All services are online" : "Some services are experiencing issues"}
+            {allServicesUp
+              ? "All services are online"
+              : "Some services are experiencing issues"}
           </h1>
           <p className="text-text/60">
             As of {formatDate(new Date().toISOString())}
@@ -122,7 +129,10 @@ const PublicStatusPage = () => {
           <h2 className="text-2xl font-semibold mb-6">Primary Services</h2>
 
           {statusPage.monitors.map((monitor) => (
-            <div key={monitor.id} className="bg-gray border border-border rounded-lg p-6">
+            <div
+              key={monitor.id}
+              className="bg-gray border border-border rounded-lg p-6"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   {monitor.isUp ? (
@@ -131,7 +141,9 @@ const PublicStatusPage = () => {
                     <FaTimesCircle className="text-error text-xl" />
                   )}
                   <div>
-                    <h3 className="text-xl font-semibold text-white">{monitor.name}</h3>
+                    <h3 className="text-xl font-semibold text-white">
+                      {monitor.name}
+                    </h3>
                     <p className="text-text/60 text-sm">{monitor.url}</p>
                   </div>
                 </div>
@@ -145,7 +157,7 @@ const PublicStatusPage = () => {
               {/* 30-day Uptime Bar */}
               <div className="mt-4">
                 <div className="flex items-center gap-1 h-8">
-                  {monitor.uptimeBarData.map((day, index) => {
+                  {monitor.uptimeBarData.map((day) => {
                     let bgColor = "bg-border";
                     if (day.hasData) {
                       bgColor = day.isUp ? "bg-success" : "bg-error";
@@ -155,7 +167,7 @@ const PublicStatusPage = () => {
 
                     return (
                       <div
-                        key={index}
+                        key={day.date}
                         className={`flex-1 h-full rounded ${bgColor} transition-colors`}
                         title={`${new Date(day.date).toLocaleDateString()}: ${
                           day.hasData ? (day.isUp ? "Up" : "Down") : "No data"
@@ -183,4 +195,3 @@ const PublicStatusPage = () => {
 };
 
 export default PublicStatusPage;
-

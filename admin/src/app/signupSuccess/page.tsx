@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
+import JSConfetti from "js-confetti";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ButtonPrimary from "@/components/button/ButtonPrimary";
-import JSConfetti from "js-confetti";
 
 const SignupSuccessPage = () => {
   const { isSignedIn, isLoaded } = useAuth();
@@ -16,7 +16,7 @@ const SignupSuccessPage = () => {
   jsConfetti.addConfetti({
     confettiRadius: 6,
     confettiNumber: 100,
-  })
+  });
 
   useEffect(() => {
     // If not signed in, redirect to sign-in

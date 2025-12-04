@@ -32,7 +32,7 @@ export interface WebworkerTestResponse {
  * Get webworker service status
  */
 export async function getWebworkerStatus(
-  token: string | null
+  token: string | null,
 ): Promise<WebworkerStatusResponse> {
   return apiClient.get<WebworkerStatusResponse>("/api/webworker/status", token);
 }
@@ -43,12 +43,11 @@ export async function getWebworkerStatus(
 export async function testWebworker(
   url?: string,
   isHttps?: boolean,
-  token?: string | null
+  token?: string | null,
 ): Promise<WebworkerTestResponse> {
   return apiClient.post<WebworkerTestResponse>(
     "/api/webworker/test",
     { url, isHttps },
-    token
+    token,
   );
 }
-

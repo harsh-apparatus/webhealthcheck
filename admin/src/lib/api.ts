@@ -23,7 +23,7 @@ export class ApiClient {
    */
   async request<T>(
     endpoint: string,
-    options: RequestInit & { token?: string | null; timeout?: number } = {}
+    options: RequestInit & { token?: string | null; timeout?: number } = {},
   ): Promise<T> {
     const { token, timeout = 30000, ...fetchOptions } = options;
 
@@ -33,7 +33,7 @@ export class ApiClient {
     };
 
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const url = `${this.baseUrl}${endpoint}`;
@@ -61,8 +61,13 @@ export class ApiClient {
 
       if (!response.ok) {
         const error: ApiError = {
-          error: data.error || `HTTP ${response.status}: ${response.statusText}`,
-          detail: data.detail || data.message || data.error || `HTTP ${response.status}: ${response.statusText}`
+          error:
+            data.error || `HTTP ${response.status}: ${response.statusText}`,
+          detail:
+            data.detail ||
+            data.message ||
+            data.error ||
+            `HTTP ${response.status}: ${response.statusText}`,
         };
         throw error;
       }
@@ -71,23 +76,26 @@ export class ApiClient {
     } catch (error) {
       // Clear timeout on error
       clearTimeout(timeoutId);
-      
+
       // Handle abort (timeout)
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         throw {
           error: "Request timeout",
           detail: `The request took longer than ${timeout}ms to complete. Please check your network connection and backend server.`,
         } as ApiError;
       }
-      
+
       // If it's already an ApiError object, throw it as-is
-      if (error && typeof error === 'object' && 'error' in error) {
+      if (error && typeof error === "object" && "error" in error) {
         throw error;
       }
       // If it's a regular Error instance, convert it
       if (error instanceof Error) {
         // Check for common network errors
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        if (
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("NetworkError")
+        ) {
           throw {
             error: "Network error",
             detail: `Unable to connect to backend server at ${this.baseUrl}. Please ensure the backend is running and accessible.`,
@@ -122,7 +130,7 @@ export class ApiClient {
   async post<T>(
     endpoint: string,
     data?: unknown,
-    token?: string | null
+    token?: string | null,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
@@ -137,7 +145,7 @@ export class ApiClient {
   async put<T>(
     endpoint: string,
     data?: unknown,
-    token?: string | null
+    token?: string | null,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",
@@ -159,4 +167,3 @@ export class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
-

@@ -1,7 +1,6 @@
 "use client";
 
-import { SignUp } from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
+import { SignUp, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -36,4 +35,3 @@ const SignUpPage = () => {
 };
 
 export default SignUpPage;
-

@@ -3,8 +3,8 @@
  */
 
 import { useAuth } from "@clerk/nextjs";
-import { useState, useCallback } from "react";
-import { ApiError } from "@/lib/api";
+import { useCallback, useState } from "react";
+import type { ApiError } from "@/lib/api";
 
 interface UseApiOptions<T> {
   onSuccess?: (data: T) => void;
@@ -19,7 +19,7 @@ export function useApi<T>() {
   const execute = useCallback(
     async (
       apiCall: (token: string | null) => Promise<T>,
-      options?: UseApiOptions<T>
+      options?: UseApiOptions<T>,
     ): Promise<T | null> => {
       setLoading(true);
       setError(null);
@@ -27,28 +27,29 @@ export function useApi<T>() {
       try {
         const token = await getToken();
         const data = await apiCall(token);
-        
+
         if (options?.onSuccess) {
           options.onSuccess(data);
         }
-        
+
         return data;
       } catch (err) {
         const apiError = err as ApiError;
-        const errorMessage = apiError.error || apiError.detail || "An error occurred";
+        const errorMessage =
+          apiError.error || apiError.detail || "An error occurred";
         setError(errorMessage);
-        
+
         if (options?.onError) {
           options.onError(apiError);
         }
-        
+
         console.error("API Error:", err);
         return null;
       } finally {
         setLoading(false);
       }
     },
-    [getToken]
+    [getToken],
   );
 
   return {
@@ -58,6 +59,3 @@ export function useApi<T>() {
     clearError: () => setError(null),
   };
 }
-
-
-

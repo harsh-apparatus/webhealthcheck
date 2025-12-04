@@ -1,17 +1,32 @@
 "use client";
-import { useUser, useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import {
+  FaCheckCircle,
+  FaClock,
+  FaExternalLinkAlt,
+  FaSync,
+  FaTimesCircle,
+} from "react-icons/fa";
+import { HiOutlineGlobeAlt } from "react-icons/hi2";
+import { TbAlertCircle, TbChartLine, TbClock } from "react-icons/tb";
 import ButtonPrimary from "@/components/button/ButtonPrimary";
+import NoWebsiteCard from "@/components/noWebsiteCard/NoWebsiteCard";
 import { useLoader } from "@/contexts/LoaderContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import { FaSync, FaCheckCircle, FaTimesCircle, FaClock, FaExternalLinkAlt } from "react-icons/fa";
-import { HiOutlineGlobeAlt } from "react-icons/hi2";
-import { TbClock, TbChartLine, TbAlertCircle } from "react-icons/tb";
-import NoWebsiteCard from "@/components/noWebsiteCard/NoWebsiteCard";
-import { getMonitors, Monitor, getMonitorLogs, MonitorLog } from "@/lib/api/monitors";
-import { getAccountInfo, AccountInfoResponse, syncSubscription } from "@/lib/api/account";
-import { ApiError } from "@/lib/api";
+import type { ApiError } from "@/lib/api";
+import {
+  type AccountInfoResponse,
+  getAccountInfo,
+  syncSubscription,
+} from "@/lib/api/account";
+import {
+  getMonitorLogs,
+  getMonitors,
+  type Monitor,
+  type MonitorLog,
+} from "@/lib/api/monitors";
 
 const page = () => {
   const { setLoading } = useLoader();
@@ -19,7 +34,9 @@ const page = () => {
   const { getToken } = useAuth();
   const { showNotification } = useNotification();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
-  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(null);
+  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(
+    null,
+  );
   const [recentLogs, setRecentLogs] = useState<MonitorLog[]>([]);
   const [uptimeLogs, setUptimeLogs] = useState<MonitorLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,22 +73,32 @@ const page = () => {
         if (accountResponse) {
           console.log("Account Info from API:", accountResponse);
           console.log("Plan from API:", accountResponse.subscription.plan);
-          console.log("Max Websites Limit:", accountResponse.limits.maxWebsites);
+          console.log(
+            "Max Websites Limit:",
+            accountResponse.limits.maxWebsites,
+          );
           setAccountInfo(accountResponse);
-          
+
           // Check if Clerk metadata has a different plan and sync if needed
           const clerkPlan = user?.publicMetadata?.plan as string | undefined;
           if (clerkPlan && ["FREE", "PRO", "ENTERPRISE"].includes(clerkPlan)) {
             const clerkPlanTyped = clerkPlan as "FREE" | "PRO" | "ENTERPRISE";
             if (accountResponse.subscription.plan !== clerkPlanTyped) {
-              console.log(`Plan mismatch detected: DB has ${accountResponse.subscription.plan}, Clerk has ${clerkPlanTyped}. Syncing...`);
+              console.log(
+                `Plan mismatch detected: DB has ${accountResponse.subscription.plan}, Clerk has ${clerkPlanTyped}. Syncing...`,
+              );
               try {
                 await syncSubscription(clerkPlanTyped, token);
                 // Refetch account info after sync
-                const updatedAccountResponse = await getAccountInfo(token).catch(() => null);
+                const updatedAccountResponse = await getAccountInfo(
+                  token,
+                ).catch(() => null);
                 if (updatedAccountResponse) {
                   setAccountInfo(updatedAccountResponse);
-                  console.log("Subscription synced successfully. New plan:", updatedAccountResponse.subscription.plan);
+                  console.log(
+                    "Subscription synced successfully. New plan:",
+                    updatedAccountResponse.subscription.plan,
+                  );
                 }
               } catch (syncErr) {
                 console.error("Failed to sync subscription:", syncErr);
@@ -85,7 +112,9 @@ const page = () => {
         console.log("Clerk Public Metadata:", user?.publicMetadata);
 
         // Fetch recent logs (last 24 hours) for all active monitors to calculate recent alerts
-        const activeMonitors = monitorsResponse.monitors.filter((m) => m.isActive);
+        const activeMonitors = monitorsResponse.monitors.filter(
+          (m) => m.isActive,
+        );
         const twentyFourHoursAgo = new Date();
         twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
         const startDate = twentyFourHoursAgo.toISOString();
@@ -100,15 +129,30 @@ const page = () => {
                 status: "down",
                 startDate: startDate,
               },
-              token
+              token,
             ).catch((err) => {
-              console.warn(`Failed to fetch logs for monitor ${monitor.id}:`, err);
-              return { logs: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false } };
-            })
+              console.warn(
+                `Failed to fetch logs for monitor ${monitor.id}:`,
+                err,
+              );
+              return {
+                logs: [],
+                pagination: {
+                  page: 1,
+                  limit: 100,
+                  total: 0,
+                  totalPages: 0,
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                },
+              };
+            }),
           );
 
           const logResponses = await Promise.all(logPromises);
-          const allRecentLogs = logResponses.flatMap((response) => response.logs);
+          const allRecentLogs = logResponses.flatMap(
+            (response) => response.logs,
+          );
           setRecentLogs(allRecentLogs);
         } catch (err) {
           console.warn("Failed to fetch recent logs:", err);
@@ -129,15 +173,30 @@ const page = () => {
                 limit: 1000, // Get more logs for accurate uptime
                 startDate: uptimeStartDate,
               },
-              token
+              token,
             ).catch((err) => {
-              console.warn(`Failed to fetch uptime logs for monitor ${monitor.id}:`, err);
-              return { logs: [], pagination: { page: 1, limit: 1000, total: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false } };
-            })
+              console.warn(
+                `Failed to fetch uptime logs for monitor ${monitor.id}:`,
+                err,
+              );
+              return {
+                logs: [],
+                pagination: {
+                  page: 1,
+                  limit: 1000,
+                  total: 0,
+                  totalPages: 0,
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                },
+              };
+            }),
           );
 
           const uptimeLogResponses = await Promise.all(uptimeLogPromises);
-          const allUptimeLogs = uptimeLogResponses.flatMap((response) => response.logs);
+          const allUptimeLogs = uptimeLogResponses.flatMap(
+            (response) => response.logs,
+          );
           setUptimeLogs(allUptimeLogs);
         } catch (err) {
           console.warn("Failed to fetch uptime logs:", err);
@@ -151,7 +210,9 @@ const page = () => {
         console.error("Failed to fetch dashboard data:", err);
         const apiError = err as ApiError;
         const errorMessage =
-          apiError.error || apiError.detail || (err instanceof Error ? err.message : "Failed to fetch data");
+          apiError.error ||
+          apiError.detail ||
+          (err instanceof Error ? err.message : "Failed to fetch data");
         showNotification("Error", "error", errorMessage);
         setMonitors([]);
       } finally {
@@ -169,7 +230,7 @@ const page = () => {
     return () => {
       isMounted = false;
     };
-  }, [isLoaded, getToken, showNotification, setLoading]);
+  }, [isLoaded, getToken, showNotification, setLoading, user]);
 
   const reloadPage = async () => {
     try {
@@ -185,12 +246,17 @@ const page = () => {
       setMonitors(monitorsResponse.monitors);
       if (accountResponse) {
         console.log("Reload - Account Info:", accountResponse);
-        console.log("Reload - Max Websites Limit:", accountResponse.limits.maxWebsites);
+        console.log(
+          "Reload - Max Websites Limit:",
+          accountResponse.limits.maxWebsites,
+        );
         setAccountInfo(accountResponse);
       }
 
       // Fetch recent logs (last 24 hours) for all active monitors
-      const activeMonitors = monitorsResponse.monitors.filter((m) => m.isActive);
+      const activeMonitors = monitorsResponse.monitors.filter(
+        (m) => m.isActive,
+      );
       const twentyFourHoursAgo = new Date();
       twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
       const startDate = twentyFourHoursAgo.toISOString();
@@ -204,8 +270,18 @@ const page = () => {
               status: "down",
               startDate: startDate,
             },
-            token
-          ).catch(() => ({ logs: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false } }))
+            token,
+          ).catch(() => ({
+            logs: [],
+            pagination: {
+              page: 1,
+              limit: 100,
+              total: 0,
+              totalPages: 0,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            },
+          })),
         );
 
         const logResponses = await Promise.all(logPromises);
@@ -229,12 +305,24 @@ const page = () => {
               limit: 1000,
               startDate: uptimeStartDate,
             },
-            token
-          ).catch(() => ({ logs: [], pagination: { page: 1, limit: 1000, total: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false } }))
+            token,
+          ).catch(() => ({
+            logs: [],
+            pagination: {
+              page: 1,
+              limit: 1000,
+              total: 0,
+              totalPages: 0,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            },
+          })),
         );
 
         const uptimeLogResponses = await Promise.all(uptimeLogPromises);
-        const allUptimeLogs = uptimeLogResponses.flatMap((response) => response.logs);
+        const allUptimeLogs = uptimeLogResponses.flatMap(
+          (response) => response.logs,
+        );
         setUptimeLogs(allUptimeLogs);
       } catch (err) {
         console.warn("Failed to fetch uptime logs:", err);
@@ -260,17 +348,23 @@ const page = () => {
     // Calculate average latency
     const latencies = monitorsWithPings
       .map((m) => m.lastPing?.latency)
-      .filter((latency): latency is number => latency !== null && latency !== undefined);
-    const averageLatency = latencies.length > 0
-      ? Math.round(latencies.reduce((sum, lat) => sum + lat, 0) / latencies.length)
-      : 0;
+      .filter(
+        (latency): latency is number =>
+          latency !== null && latency !== undefined,
+      );
+    const averageLatency =
+      latencies.length > 0
+        ? Math.round(
+            latencies.reduce((sum, lat) => sum + lat, 0) / latencies.length,
+          )
+        : 0;
 
     // Count statuses
     const upCount = activeMonitors.filter(
-      (m) => m.lastPing && m.lastPing.status === "up"
+      (m) => m.lastPing && m.lastPing.status === "up",
     ).length;
     const downCount = activeMonitors.filter(
-      (m) => m.lastPing && m.lastPing.status === "down"
+      (m) => m.lastPing && m.lastPing.status === "down",
     ).length;
     const inactiveCount = monitors.filter((m) => !m.isActive).length;
 
@@ -278,9 +372,7 @@ const page = () => {
     // This gives a true uptime percentage based on actual ping history
     const totalPings = uptimeLogs.length;
     const upPings = uptimeLogs.filter((log) => log.status === "up").length;
-    const averageUptime = totalPings > 0
-      ? (upPings / totalPings) * 100
-      : 100;
+    const averageUptime = totalPings > 0 ? (upPings / totalPings) * 100 : 100;
 
     // Count recent alerts from history logs (last 24 hours)
     // Count total number of down events (not just unique monitors)
@@ -288,9 +380,10 @@ const page = () => {
 
     // Get the max websites limit from accountInfo, with proper fallback
     const maxWebsites = accountInfo?.limits.maxWebsites;
-    const websitesAdditionLimit = maxWebsites !== undefined && maxWebsites !== null 
-      ? maxWebsites 
-      : monitors.length;
+    const websitesAdditionLimit =
+      maxWebsites !== undefined && maxWebsites !== null
+        ? maxWebsites
+        : monitors.length;
 
     // Debug logging
     if (accountInfo) {
@@ -375,7 +468,7 @@ const page = () => {
       const urlObj = new URL(url);
       return urlObj.hostname + urlObj.pathname;
     } catch {
-      return url.length > 40 ? url.substring(0, 37) + "..." : url;
+      return url.length > 40 ? `${url.substring(0, 37)}...` : url;
     }
   };
 
@@ -423,11 +516,13 @@ const page = () => {
                       stats.averageLatency >= 1000
                         ? "text-error"
                         : stats.averageLatency >= 500
-                        ? "text-warning"
-                        : "text-success"
+                          ? "text-warning"
+                          : "text-success"
                     } flex flex-col`}
                   >
-                    {stats.averageLatency > 0 ? `${stats.averageLatency}ms` : "—"}
+                    {stats.averageLatency > 0
+                      ? `${stats.averageLatency}ms`
+                      : "—"}
                   </span>
                 }
                 icon={<TbClock />}
@@ -442,17 +537,15 @@ const page = () => {
                       stats.averageUptime >= 99.5
                         ? "text-success"
                         : stats.averageUptime >= 99
-                        ? "text-warning"
-                        : "text-error"
+                          ? "text-warning"
+                          : "text-error"
                     } flex flex-col`}
                   >
                     {stats.averageUptime.toFixed(1)}%
                   </span>
                 }
                 icon={<TbChartLine />}
-
                 dateRange="this is the combined Uptime of all websites in the last ping call "
-
                 href="/dashboard/logs"
               />
               <DashboardCard
@@ -463,8 +556,8 @@ const page = () => {
                       stats.recentAlerts >= 5
                         ? "text-error"
                         : stats.recentAlerts >= 1
-                        ? "text-warning"
-                        : "text-success"
+                          ? "text-warning"
+                          : "text-success"
                     } flex flex-col`}
                   >
                     {stats.recentAlerts.toString()}
@@ -506,9 +599,13 @@ const page = () => {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="shrink-0">{getStatusBadge(monitor)}</div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-white truncate">{monitor.name}</h3>
+                        <h3 className="font-medium text-white truncate">
+                          {monitor.name}
+                        </h3>
                         <div className="flex items-center gap-2 text-sm text-text mt-1">
-                          <span className="truncate">{formatUrl(monitor.url)}</span>
+                          <span className="truncate">
+                            {formatUrl(monitor.url)}
+                          </span>
                           <a
                             href={monitor.url}
                             target="_blank"
@@ -530,7 +627,9 @@ const page = () => {
                               : "—"}
                           </span>
                           {monitor.lastPing.statusCode && (
-                            <span className="opacity-70">{monitor.lastPing.statusCode}</span>
+                            <span className="opacity-70">
+                              {monitor.lastPing.statusCode}
+                            </span>
                           )}
                         </>
                       ) : (
@@ -568,7 +667,7 @@ function DashboardCard({
   href?: string;
 }) {
   const cardContent = (
-    <div 
+    <div
       className="card-highlight flex items-center justify-between"
       data-tooltip-id="my-tooltip"
       data-tooltip-content={dateRange || title}
@@ -595,4 +694,3 @@ function DashboardCard({
 
   return cardContent;
 }
-

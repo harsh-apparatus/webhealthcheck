@@ -1,8 +1,7 @@
 "use client";
 
 import { Table } from "antd";
-import type { TableProps } from "antd/es/table";
-import type { ColumnType } from "antd/es/table";
+import type { ColumnType, TableProps } from "antd/es/table";
 
 export type { ColumnType };
 
@@ -20,7 +19,7 @@ interface CustomTableProps<T> {
   onPageChange?: (page: number) => void;
 }
 
-function CustomTable<T extends Record<string, any>>({
+function CustomTable<T extends Record<string, unknown>>({
   data,
   columns,
   loading = false,
@@ -29,7 +28,7 @@ function CustomTable<T extends Record<string, any>>({
   className = "",
   enablePagination = true,
   currentPage,
-  totalPages,
+  _totalPages,
   total,
   onPageChange,
 }: CustomTableProps<T>) {

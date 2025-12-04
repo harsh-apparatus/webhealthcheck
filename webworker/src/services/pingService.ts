@@ -28,7 +28,9 @@ export async function pingUrl(request: PingRequest): Promise<PingResponse> {
     // Ensure URL has protocol
     let urlToPing = request.url;
     if (!urlToPing.startsWith("http://") && !urlToPing.startsWith("https://")) {
-      urlToPing = request.isHttps ? `https://${urlToPing}` : `http://${urlToPing}`;
+      urlToPing = request.isHttps
+        ? `https://${urlToPing}`
+        : `http://${urlToPing}`;
     }
 
     // Create AbortController for timeout
@@ -55,29 +57,33 @@ export async function pingUrl(request: PingRequest): Promise<PingResponse> {
       if (!isUp) {
         try {
           const contentType = response.headers.get("content-type") || "";
-          if (contentType.includes("text/") || contentType.includes("application/json")) {
+          if (
+            contentType.includes("text/") ||
+            contentType.includes("application/json")
+          ) {
             const text = await response.text();
             bodySnippet = text.substring(0, MAX_BODY_SNIPPET_LENGTH);
           }
-        } catch (bodyError) {
+        } catch (_bodyError) {
           // Ignore body reading errors
         }
       }
-    } catch (fetchError: any) {
+    } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       pingMs = Date.now() - startTime;
-      
-      if (fetchError.name === "AbortError") {
+
+      if (fetchError instanceof Error && fetchError.name === "AbortError") {
         error = "Request timeout";
         isUp = false;
       } else {
-        error = fetchError.message || "Unknown error";
+        error =
+          fetchError instanceof Error ? fetchError.message : "Unknown error";
         isUp = false;
       }
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     pingMs = Date.now() - startTime;
-    error = err.message || "Failed to ping URL";
+    error = err instanceof Error ? err.message : "Failed to ping URL";
     isUp = false;
   }
 
@@ -90,4 +96,3 @@ export async function pingUrl(request: PingRequest): Promise<PingResponse> {
     error,
   };
 }
-

@@ -1,23 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import ButtonPrimary from "@/components/button/ButtonPrimary";
-import DeleteConfirmModal from "@/components/modal/DeleteConfirmModal";
-import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock, FaTrash, FaEdit, FaLock, FaUnlock } from "react-icons/fa";
+import { Input } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
+  FaArrowLeft,
+  FaCheckCircle,
+  FaClock,
+  FaEdit,
+  FaLock,
+  FaTimesCircle,
+  FaTrash,
+  FaUnlock,
+} from "react-icons/fa";
+import ButtonPrimary from "@/components/button/ButtonPrimary";
+import CustomTable, {
+  type ColumnType,
+} from "@/components/customTable/CustomTable";
+import DeleteConfirmModal from "@/components/modal/DeleteConfirmModal";
+import { useLoader } from "@/contexts/LoaderContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import type { ApiError } from "@/lib/api";
+import {
+  deleteMonitor,
   getMonitorDetails,
   getMonitorLogs,
-  deleteMonitor,
-  MonitorDetails,
-  MonitorLog,
+  type MonitorDetails,
+  type MonitorLog,
 } from "@/lib/api/monitors";
-import { ApiError } from "@/lib/api";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useLoader } from "@/contexts/LoaderContext";
-import CustomTable, { ColumnType } from "@/components/customTable/CustomTable";
-import { Input } from "antd";
 
 const page = () => {
   const { getToken } = useAuth();
@@ -27,9 +38,11 @@ const page = () => {
   const searchParams = useSearchParams();
   const monitorId = searchParams.get("id");
 
-  const [monitorDetails, setMonitorDetails] = useState<MonitorDetails | null>(null);
+  const [monitorDetails, setMonitorDetails] = useState<MonitorDetails | null>(
+    null,
+  );
   const [logs, setLogs] = useState<MonitorLog[]>([]);
-  const [loading, setLocalLoading] = useState(false);
+  const [_loading, _setLocalLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -57,16 +70,21 @@ const page = () => {
       try {
         const token = await getToken();
         if (!token) {
-          showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+          showNotification(
+            "Authentication Error",
+            "error",
+            "No authentication token available. Please sign in.",
+          );
           router.push("/dashboard/websites");
           return;
         }
 
-        const data = await getMonitorDetails(parseInt(monitorId), token);
+        const data = await getMonitorDetails(parseInt(monitorId, 10), token);
         setMonitorDetails(data.monitor);
       } catch (err) {
         const apiError = err as ApiError;
-        const errorMessage = apiError.error || apiError.detail || "Failed to load monitor details";
+        const errorMessage =
+          apiError.error || apiError.detail || "Failed to load monitor details";
         showNotification("Failed to load details", "error", errorMessage);
         console.error("API Error:", err);
         router.push("/dashboard/websites");
@@ -90,18 +108,19 @@ const page = () => {
 
         // Fetch more logs for graph (last 50)
         const data = await getMonitorLogs(
-          parseInt(monitorId),
+          parseInt(monitorId, 10),
           {
             page: currentPage,
             limit: 50,
           },
-          token
+          token,
         );
         setLogs(data.logs);
         setPagination(data.pagination);
       } catch (err) {
         const apiError = err as ApiError;
-        const errorMessage = apiError.error || apiError.detail || "Failed to load logs";
+        const errorMessage =
+          apiError.error || apiError.detail || "Failed to load logs";
         showNotification("Failed to load logs", "error", errorMessage);
         console.error("API Error:", err);
       } finally {
@@ -124,18 +143,27 @@ const page = () => {
     try {
       const token = await getToken();
       if (!token) {
-        showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+        showNotification(
+          "Authentication Error",
+          "error",
+          "No authentication token available. Please sign in.",
+        );
         setShowDeleteModal(false);
         return;
       }
 
-      await deleteMonitor(parseInt(monitorId), token);
-      showNotification("Success", "success", "Monitor and all associated logs deleted successfully");
+      await deleteMonitor(parseInt(monitorId, 10), token);
+      showNotification(
+        "Success",
+        "success",
+        "Monitor and all associated logs deleted successfully",
+      );
       setShowDeleteModal(false);
       router.push("/dashboard/websites");
     } catch (err) {
       const apiError = err as ApiError;
-      const errorMessage = apiError.detail || apiError.error || "Failed to delete monitor";
+      const errorMessage =
+        apiError.detail || apiError.error || "Failed to delete monitor";
       showNotification("Failed to delete monitor", "error", errorMessage);
       console.error("API Error:", err);
     } finally {
@@ -172,17 +200,17 @@ const page = () => {
 
   // Prepare graph data (last 30 logs for visualization)
   const graphData = logs.slice(0, 30).reverse();
-  const maxLatency = Math.max(...graphData.map(log => log.latency || 0), 100);
-  
+  const maxLatency = Math.max(...graphData.map((log) => log.latency || 0), 100);
+
   // Calculate date range for graph
   const getDateRange = () => {
     if (graphData.length === 0) return null;
-    const dates = graphData.map(log => new Date(log.timestamp));
-    const earliest = new Date(Math.min(...dates.map(d => d.getTime())));
-    const latest = new Date(Math.max(...dates.map(d => d.getTime())));
+    const dates = graphData.map((log) => new Date(log.timestamp));
+    const earliest = new Date(Math.min(...dates.map((d) => d.getTime())));
+    const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
     return { earliest, latest };
   };
-  
+
   const dateRange = getDateRange();
 
   const logColumns: ColumnType<MonitorLog>[] = [
@@ -191,28 +219,51 @@ const page = () => {
       key: "status",
       dataIndex: "status",
       render: (_, record) => getStatusBadge(record.status),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search status (up/down)"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -234,29 +285,53 @@ const page = () => {
           </div>
         </div>
       ),
-      sorter: (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      sorter: (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search timestamp"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -264,7 +339,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        formatDate(record.timestamp).toLowerCase().includes(String(value).toLowerCase()),
+        formatDate(record.timestamp)
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
     {
       title: "Response Time",
@@ -272,7 +349,9 @@ const page = () => {
       dataIndex: "latency",
       render: (_, record) => (
         <div className="text-text">
-          <span className="text-white font-medium">{formatLatency(record.latency)}</span>
+          <span className="text-white font-medium">
+            {formatLatency(record.latency)}
+          </span>
         </div>
       ),
       sorter: (a, b) => {
@@ -280,28 +359,51 @@ const page = () => {
         const bLatency = b.latency ?? 0;
         return aLatency - bLatency;
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search response time"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -309,7 +411,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        formatLatency(record.latency).toLowerCase().includes(String(value).toLowerCase()),
+        formatLatency(record.latency)
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
     {
       title: "Status Code",
@@ -325,28 +429,51 @@ const page = () => {
         const bCode = b.statusCode ?? 0;
         return aCode - bCode;
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search status code"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -367,28 +494,51 @@ const page = () => {
           </span>
         </div>
       ),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search response"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -396,7 +546,9 @@ const page = () => {
         </div>
       ),
       onFilter: (value, record) =>
-        (record.bodySnippet || "").toLowerCase().includes(String(value).toLowerCase()),
+        (record.bodySnippet || "")
+          .toLowerCase()
+          .includes(String(value).toLowerCase()),
     },
   ];
 
@@ -424,13 +576,17 @@ const page = () => {
           <h1 className="h2">Monitor Details</h1>
           <div className="flex gap-4 items-center">
             <button
-              onClick={() => router.push(`/dashboard/websites/edit?id=${monitorId}`)}
+              type="button"
+              onClick={() =>
+                router.push(`/dashboard/websites/edit?id=${monitorId}`)
+              }
               className="px-4 py-2 bg-background-secondary hover:bg-background-secondary/80 border border-border text-text rounded transition-colors flex items-center gap-2"
             >
               <FaEdit />
               Edit
             </button>
             <button
+              type="button"
               onClick={handleDeleteClick}
               disabled={deleting}
               className="px-4 py-2 bg-error/20 hover:bg-error/30 border border-error/50 text-error rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -451,15 +607,17 @@ const page = () => {
       <div className="card p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label className="text-text/60 text-sm block mb-1">Website Name</label>
-            <p className="text-white font-semibold text-lg">{monitorDetails.name}</p>
+            <div className="text-text/60 text-sm block mb-1">Website Name</div>
+            <p className="text-white font-semibold text-lg">
+              {monitorDetails.name}
+            </p>
           </div>
           <div>
-            <label className="text-text/60 text-sm block mb-1">URL</label>
+            <div className="text-text/60 text-sm block mb-1">URL</div>
             <p className="text-text break-all">{monitorDetails.url}</p>
           </div>
           <div>
-            <label className="text-text/60 text-sm block mb-1">Status</label>
+            <div className="text-text/60 text-sm block mb-1">Status</div>
             <div className="mt-1">
               {monitorDetails.isActive ? (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-success/20 border border-success/50 text-success">
@@ -475,7 +633,7 @@ const page = () => {
             </div>
           </div>
           <div>
-            <label className="text-text/60 text-sm block mb-1">Last Ping</label>
+            <div className="text-text/60 text-sm block mb-1">Last Ping</div>
             <p className="text-text">
               {monitorDetails.lastPing
                 ? formatDate(monitorDetails.lastPing.timestamp)
@@ -483,7 +641,7 @@ const page = () => {
             </p>
           </div>
           <div>
-            <label className="text-text/60 text-sm block mb-1">Protocol</label>
+            <div className="text-text/60 text-sm block mb-1">Protocol</div>
             <div className="mt-1">
               {monitorDetails.isHttps ? (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-success/20 border border-success/50 text-success">
@@ -504,19 +662,21 @@ const page = () => {
       {/* Statistics Cards - Highlighted */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card-highlight p-6">
-          <label className="text-text/60 text-sm block mb-2">Total Pings</label>
+          <div className="text-text/60 text-sm block mb-2">Total Pings</div>
           <p className="text-3xl font-bold text-white">
             {monitorDetails.statistics.totalPings}
           </p>
         </div>
         <div className="card-highlight p-6">
-          <label className="text-text/60 text-sm block mb-2">Uptime</label>
+          <div className="text-text/60 text-sm block mb-2">Uptime</div>
           <p className="text-3xl font-bold text-success">
             {monitorDetails.statistics.uptimePercentage}%
           </p>
         </div>
         <div className="card-highlight p-6">
-          <label className="text-text/60 text-sm block mb-2">Average Response</label>
+          <div className="text-text/60 text-sm block mb-2">
+            Average Response
+          </div>
           <p className="text-3xl font-bold text-white">
             {monitorDetails.statistics.averageResponseTime
               ? `${monitorDetails.statistics.averageResponseTime}ms`
@@ -524,7 +684,7 @@ const page = () => {
           </p>
         </div>
         <div className="card-highlight p-6">
-          <label className="text-text/60 text-sm block mb-2">Down Pings</label>
+          <div className="text-text/60 text-sm block mb-2">Down Pings</div>
           <p className="text-3xl font-bold text-error">
             {monitorDetails.statistics.downPings}
           </p>
@@ -540,11 +700,25 @@ const page = () => {
               <div className="text-sm text-text/60 flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-text/80">
-                    {dateRange.earliest.toLocaleDateString([], { month: 'short', day: 'numeric' })} {dateRange.earliest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {dateRange.earliest.toLocaleDateString([], {
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    {dateRange.earliest.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                   <span>→</span>
                   <span className="text-text/80">
-                    {dateRange.latest.toLocaleDateString([], { month: 'short', day: 'numeric' })} {dateRange.latest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {dateRange.latest.toLocaleDateString([], {
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    {dateRange.latest.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
                 <span className="text-text/60">
@@ -556,9 +730,15 @@ const page = () => {
         </div>
         {graphData.length > 0 ? (
           <div className="px-6 pb-6">
-            <div className="w-full h-64 relative pb-6" style={{ width: '100%' }}>
+            <div
+              className="w-full h-64 relative pb-6"
+              style={{ width: "100%" }}
+            >
               {/* Y-axis labels */}
-              <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-text/60 pr-4 z-10" style={{ width: '60px' }}>
+              <div
+                className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-text/60 pr-4 z-10"
+                style={{ width: "60px" }}
+              >
                 <span>{maxLatency}ms</span>
                 <span>{Math.round(maxLatency * 0.75)}ms</span>
                 <span>{Math.round(maxLatency * 0.5)}ms</span>
@@ -566,16 +746,35 @@ const page = () => {
                 <span>0ms</span>
               </div>
               {/* Graph SVG - positioned to take remaining space */}
-              <div className="absolute left-0 top-0 right-0 bottom-0" style={{ left: '60px', width: 'calc(100% - 60px)' }}>
-                <svg 
-                  viewBox="0 0 1000 256" 
+              <div
+                className="absolute left-0 top-0 right-0 bottom-0"
+                style={{ left: "60px", width: "calc(100% - 60px)" }}
+              >
+                <svg
+                  viewBox="0 0 1000 256"
                   preserveAspectRatio="none"
-                  style={{ display: 'block', width: '100%', height: '100%' }}
+                  style={{ display: "block", width: "100%", height: "100%" }}
+                  role="img"
+                  aria-label="Response time graph"
                 >
                   <defs>
-                    <linearGradient id={`lineGradient-${monitorId}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="var(--success)" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="var(--success)" stopOpacity="0" />
+                    <linearGradient
+                      id={`lineGradient-${monitorId}`}
+                      x1="0%"
+                      y1="0%"
+                      x2="0%"
+                      y2="100%"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--success)"
+                        stopOpacity="0.3"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--success)"
+                        stopOpacity="0"
+                      />
                     </linearGradient>
                   </defs>
                   {/* Grid lines */}
@@ -593,20 +792,24 @@ const page = () => {
                   ))}
                   {/* Area under curve */}
                   <path
-                    d={`M 0 ${256 - ((graphData[0]?.latency || 0) / maxLatency) * 256} ${graphData.map((log, i) => {
-                      const x = (i / (graphData.length - 1 || 1)) * 1000;
-                      const y = 256 - ((log.latency || 0) / maxLatency) * 256;
-                      return `L ${x} ${y}`;
-                    }).join(' ')} L 1000 256 L 0 256 Z`}
+                    d={`M 0 ${256 - ((graphData[0]?.latency || 0) / maxLatency) * 256} ${graphData
+                      .map((log, i) => {
+                        const x = (i / (graphData.length - 1 || 1)) * 1000;
+                        const y = 256 - ((log.latency || 0) / maxLatency) * 256;
+                        return `L ${x} ${y}`;
+                      })
+                      .join(" ")} L 1000 256 L 0 256 Z`}
                     fill={`url(#lineGradient-${monitorId})`}
                   />
                   {/* Line */}
                   <polyline
-                    points={graphData.map((log, i) => {
-                      const x = (i / (graphData.length - 1 || 1)) * 1000;
-                      const y = 256 - ((log.latency || 0) / maxLatency) * 256;
-                      return `${x},${y}`;
-                    }).join(' ')}
+                    points={graphData
+                      .map((log, i) => {
+                        const x = (i / (graphData.length - 1 || 1)) * 1000;
+                        const y = 256 - ((log.latency || 0) / maxLatency) * 256;
+                        return `${x},${y}`;
+                      })
+                      .join(" ")}
                     fill="none"
                     stroke="var(--success)"
                     strokeWidth="2"
@@ -617,11 +820,15 @@ const page = () => {
                     const y = 256 - ((log.latency || 0) / maxLatency) * 256;
                     return (
                       <circle
-                        key={i}
+                        key={`${log.timestamp || i}-${x}-${y}`}
                         cx={x}
                         cy={y}
                         r="4"
-                        fill={log.status === "up" ? "var(--success)" : "var(--error)"}
+                        fill={
+                          log.status === "up"
+                            ? "var(--success)"
+                            : "var(--error)"
+                        }
                         stroke="var(--bg)"
                         strokeWidth="2"
                       />
@@ -631,12 +838,36 @@ const page = () => {
               </div>
               {/* X-axis time labels */}
               {dateRange && graphData.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-text/60 px-0" style={{ left: '60px', width: 'calc(100% - 60px)', paddingTop: '8px' }}>
-                  <span>{dateRange.earliest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div
+                  className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-text/60 px-0"
+                  style={{
+                    left: "60px",
+                    width: "calc(100% - 60px)",
+                    paddingTop: "8px",
+                  }}
+                >
+                  <span>
+                    {dateRange.earliest.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                   {graphData.length > 2 && (
-                    <span>{new Date(graphData[Math.floor(graphData.length / 2)].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span>
+                      {new Date(
+                        graphData[Math.floor(graphData.length / 2)].timestamp,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   )}
-                  <span>{dateRange.latest.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>
+                    {dateRange.latest.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
               )}
             </div>
@@ -670,7 +901,11 @@ const page = () => {
         onConfirm={handleDeleteConfirm}
         title="Delete Website Monitor"
         message="Are you sure you want to delete this website monitor? This will permanently delete:"
-        itemName={monitorDetails ? `${monitorDetails.name} (${monitorDetails.url})` : undefined}
+        itemName={
+          monitorDetails
+            ? `${monitorDetails.name} (${monitorDetails.url})`
+            : undefined
+        }
         isLoading={deleting}
       />
     </>

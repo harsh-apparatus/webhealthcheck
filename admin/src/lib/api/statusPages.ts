@@ -53,7 +53,7 @@ export interface GetStatusPageResponse {
  * Get all status pages for the authenticated user
  */
 export async function getStatusPages(
-  token: string | null
+  token: string | null,
 ): Promise<GetStatusPagesResponse> {
   return apiClient.get<GetStatusPagesResponse>("/api/status-pages", token);
 }
@@ -63,7 +63,7 @@ export async function getStatusPages(
  */
 export async function getStatusPage(
   id: number,
-  token: string | null
+  token: string | null,
 ): Promise<GetStatusPageResponse> {
   return apiClient.get<GetStatusPageResponse>(`/api/status-pages/${id}`, token);
 }
@@ -73,9 +73,13 @@ export async function getStatusPage(
  */
 export async function createStatusPage(
   data: CreateStatusPageRequest,
-  token: string | null
+  token: string | null,
 ): Promise<GetStatusPageResponse> {
-  return apiClient.post<GetStatusPageResponse>("/api/status-pages", data, token);
+  return apiClient.post<GetStatusPageResponse>(
+    "/api/status-pages",
+    data,
+    token,
+  );
 }
 
 /**
@@ -84,9 +88,13 @@ export async function createStatusPage(
 export async function updateStatusPage(
   id: number,
   data: UpdateStatusPageRequest,
-  token: string | null
+  token: string | null,
 ): Promise<GetStatusPageResponse> {
-  return apiClient.put<GetStatusPageResponse>(`/api/status-pages/${id}`, data, token);
+  return apiClient.put<GetStatusPageResponse>(
+    `/api/status-pages/${id}`,
+    data,
+    token,
+  );
 }
 
 /**
@@ -94,8 +102,7 @@ export async function updateStatusPage(
  */
 export async function deleteStatusPage(
   id: number,
-  token: string | null
+  token: string | null,
 ): Promise<void> {
   return apiClient.delete<void>(`/api/status-pages/${id}`, token);
 }
-

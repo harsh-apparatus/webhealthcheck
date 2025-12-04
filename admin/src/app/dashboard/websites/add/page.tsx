@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import ButtonPrimary from "@/components/button/ButtonPrimary";
+import { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { createMonitor } from "@/lib/api/monitors";
-import { ApiError } from "@/lib/api";
+import ButtonPrimary from "@/components/button/ButtonPrimary";
 import Toggle from "@/components/toggle/Toggle";
-import { useNotification } from "@/contexts/NotificationContext";
 import { useLoader } from "@/contexts/LoaderContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import type { ApiError } from "@/lib/api";
+import { createMonitor } from "@/lib/api/monitors";
 
 const page = () => {
   const { getToken } = useAuth();
@@ -30,29 +30,40 @@ const page = () => {
       const token = await getToken();
 
       if (!token) {
-        showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+        showNotification(
+          "Authentication Error",
+          "error",
+          "No authentication token available. Please sign in.",
+        );
         setLocalLoading(false);
         setLoading(false);
         return;
       }
 
       // Use the API service
-      const data = await createMonitor(
+      const _data = await createMonitor(
         {
           name: formData.name,
           url: formData.url,
           isHttps: formData.isHttps,
         },
-        token
+        token,
       );
 
-      showNotification("Changes saved", "success", "Website monitor created successfully!");
+      showNotification(
+        "Changes saved",
+        "success",
+        "Website monitor created successfully!",
+      );
       // Reset form on success
       setFormData({ name: "", url: "", isHttps: true });
     } catch (err) {
       const apiError = err as ApiError;
       // Prefer detail over error for more specific messages (e.g., subscription limits)
-      const errorMessage = apiError.detail || apiError.error || "An error occurred while creating the monitor";
+      const errorMessage =
+        apiError.detail ||
+        apiError.error ||
+        "An error occurred while creating the monitor";
       showNotification("Failed to create monitor", "error", errorMessage);
       console.error("API Error:", err);
     } finally {
@@ -76,9 +87,14 @@ const page = () => {
       </div>
 
       <div className="card  p-6">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-start">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 items-start"
+        >
           <div className="flex flex-col gap-2 w-full">
-            <label htmlFor="name" > Website Name <span>*</span>
+            <label htmlFor="name">
+              {" "}
+              Website Name <span>*</span>
             </label>
             <input
               id="name"
@@ -93,7 +109,10 @@ const page = () => {
           </div>
 
           <div className="flex flex-col gap-2 w-full">
-            <label htmlFor="url"> Website URL <span >*</span> </label>
+            <label htmlFor="url">
+              {" "}
+              Website URL <span>*</span>{" "}
+            </label>
             <input
               id="url"
               type="url"
@@ -108,12 +127,18 @@ const page = () => {
               }}
               placeholder="https://example.com"
               required
-             
             />
           </div>
-          <Toggle isChecked={formData.isHttps} onChange={(checked) => setFormData({ ...formData, isHttps: checked })} onText="HTTPS" offText="HTTP" />
-  
-        <ButtonPrimary
+          <Toggle
+            isChecked={formData.isHttps}
+            onChange={(checked) =>
+              setFormData({ ...formData, isHttps: checked })
+            }
+            onText="HTTPS"
+            offText="HTTP"
+          />
+
+          <ButtonPrimary
             name={loading ? "Creating..." : "Create Website"}
             type="submit"
             disabled={loading}

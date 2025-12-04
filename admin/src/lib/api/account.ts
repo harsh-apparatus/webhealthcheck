@@ -51,21 +51,35 @@ export interface PlanDetailsResponse {
 /**
  * Get account information including subscription plan and limits
  */
-export async function getAccountInfo(token: string | null): Promise<AccountInfoResponse> {
+export async function getAccountInfo(
+  token: string | null,
+): Promise<AccountInfoResponse> {
   return apiClient.get<AccountInfoResponse>("/api/users/account", token);
 }
 
 /**
  * Get plan details including limits and current usage
  */
-export async function getPlanDetails(token: string | null): Promise<PlanDetailsResponse> {
+export async function getPlanDetails(
+  token: string | null,
+): Promise<PlanDetailsResponse> {
   return apiClient.get<PlanDetailsResponse>("/api/users/plan", token);
 }
 
 /**
  * Sync subscription from Clerk metadata
  */
-export async function syncSubscription(plan: "FREE" | "PRO" | "ENTERPRISE", token: string | null): Promise<{ message: string; subscription: any; plan: string }> {
-  return apiClient.post<{ message: string; subscription: any; plan: string }>("/api/users/sync-subscription", { plan }, token);
+export async function syncSubscription(
+  plan: "FREE" | "PRO" | "ENTERPRISE",
+  token: string | null,
+): Promise<{
+  message: string;
+  subscription: Record<string, unknown>;
+  plan: string;
+}> {
+  return apiClient.post<{
+    message: string;
+    subscription: Record<string, unknown>;
+    plan: string;
+  }>("/api/users/sync-subscription", { plan }, token);
 }
-

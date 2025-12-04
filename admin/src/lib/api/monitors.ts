@@ -42,20 +42,16 @@ export interface GetMonitorsResponse {
  */
 export async function createMonitor(
   data: CreateMonitorRequest,
-  token: string | null
+  token: string | null,
 ): Promise<CreateMonitorResponse> {
-  return apiClient.post<CreateMonitorResponse>(
-    "/api/monitors",
-    data,
-    token
-  );
+  return apiClient.post<CreateMonitorResponse>("/api/monitors", data, token);
 }
 
 /**
  * Get all monitors for the authenticated user
  */
 export async function getMonitors(
-  token: string | null
+  token: string | null,
 ): Promise<GetMonitorsResponse> {
   return apiClient.get<GetMonitorsResponse>("/api/monitors", token);
 }
@@ -65,7 +61,7 @@ export async function getMonitors(
  */
 export async function getMonitor(
   id: number,
-  token: string | null
+  token: string | null,
 ): Promise<{ monitor: Monitor }> {
   return apiClient.get<{ monitor: Monitor }>(`/api/monitors/${id}`, token);
 }
@@ -76,9 +72,13 @@ export async function getMonitor(
 export async function updateMonitor(
   id: number,
   data: Partial<CreateMonitorRequest>,
-  token: string | null
+  token: string | null,
 ): Promise<{ monitor: Monitor }> {
-  return apiClient.put<{ monitor: Monitor }>(`/api/monitors/${id}`, data, token);
+  return apiClient.put<{ monitor: Monitor }>(
+    `/api/monitors/${id}`,
+    data,
+    token,
+  );
 }
 
 /**
@@ -86,7 +86,7 @@ export async function updateMonitor(
  */
 export async function deleteMonitor(
   id: number,
-  token: string | null
+  token: string | null,
 ): Promise<void> {
   return apiClient.delete<void>(`/api/monitors/${id}`, token);
 }
@@ -128,11 +128,11 @@ export interface MonitorDetailsResponse {
  */
 export async function getMonitorDetails(
   id: number,
-  token: string | null
+  token: string | null,
 ): Promise<MonitorDetailsResponse> {
   return apiClient.get<MonitorDetailsResponse>(
     `/api/monitors/${id}/details`,
-    token
+    token,
   );
 }
 
@@ -172,7 +172,7 @@ export interface GetMonitorLogsParams {
 export async function getMonitorLogs(
   id: number,
   params: GetMonitorLogsParams,
-  token: string | null
+  token: string | null,
 ): Promise<MonitorLogsResponse> {
   const queryParams = new URLSearchParams();
   if (params.page) queryParams.append("page", params.page.toString());
@@ -186,4 +186,3 @@ export async function getMonitorLogs(
 
   return apiClient.get<MonitorLogsResponse>(url, token);
 }
-

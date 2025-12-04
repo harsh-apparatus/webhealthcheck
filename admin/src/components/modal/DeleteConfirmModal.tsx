@@ -27,13 +27,24 @@ const DeleteConfirmModal = ({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          onClose();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Delete confirmation dialog"
     >
       <div
         className="card p-6 max-w-md w-full mx-4 relative"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
       >
         {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 text-text/60 hover:text-text transition-colors"
           disabled={isLoading}
@@ -60,13 +71,15 @@ const DeleteConfirmModal = ({
         {/* Warning message */}
         <div className="bg-error/10 border border-error/30 rounded-md p-3 mb-6">
           <p className="text-error text-sm">
-            This action cannot be undone. All associated data will be permanently deleted.
+            This action cannot be undone. All associated data will be
+            permanently deleted.
           </p>
         </div>
 
         {/* Actions */}
         <div className="flex gap-3 justify-end">
           <button
+            type="button"
             onClick={onClose}
             disabled={isLoading}
             className="px-4 py-2 bg-background-secondary hover:bg-background-secondary/80 border border-border text-text rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -74,6 +87,7 @@ const DeleteConfirmModal = ({
             Cancel
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             disabled={isLoading}
             className="px-4 py-2 bg-error/20 hover:bg-error/30 border border-error/50 text-error rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -94,4 +108,3 @@ const DeleteConfirmModal = ({
 };
 
 export default DeleteConfirmModal;
-

@@ -1,11 +1,20 @@
 "use client";
 
-import Link from "next/link";
-import { Monitor } from "@/lib/api/monitors";
-import { FaExternalLinkAlt, FaCheckCircle, FaTimesCircle, FaClock, FaEdit, FaLock, FaUnlock, FaList } from "react-icons/fa";
-import CustomTable from "@/components/customTable/CustomTable";
-import type { ColumnType } from "antd/es/table";
 import { Input, Tooltip } from "antd";
+import type { ColumnType } from "antd/es/table";
+import Link from "next/link";
+import {
+  FaCheckCircle,
+  FaClock,
+  FaEdit,
+  FaExternalLinkAlt,
+  FaList,
+  FaLock,
+  FaTimesCircle,
+  FaUnlock,
+} from "react-icons/fa";
+import CustomTable from "@/components/customTable/CustomTable";
+import type { Monitor } from "@/lib/api/monitors";
 
 interface WebsitesTableProps {
   monitors: Monitor[];
@@ -60,12 +69,12 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
       const fullPath = urlObj.hostname + urlObj.pathname;
       // Truncate if too long
       if (fullPath.length > 40) {
-        return fullPath.substring(0, 37) + "...";
+        return `${fullPath.substring(0, 37)}...`;
       }
       return fullPath;
     } catch {
       // If URL parsing fails, just truncate the original string
-      return url.length > 40 ? url.substring(0, 37) + "..." : url;
+      return url.length > 40 ? `${url.substring(0, 37)}...` : url;
     }
   };
 
@@ -96,28 +105,51 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
         <div className="font-medium text-white">{text}</div>
       ),
       sorter: (a, b) => a.name.localeCompare(b.name),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search name"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -146,28 +178,51 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
         </div>
       ),
       sorter: (a, b) => a.url.localeCompare(b.url),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search URL"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -183,28 +238,51 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
       key: "isHttps",
       render: (isHttps: boolean) => getHttpsBadge(isHttps),
       sorter: (a, b) => Number(a.isHttps) - Number(b.isHttps),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search protocol (http/https)"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -229,7 +307,9 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
                   {formatLatency(lastPing.latency)}
                 </span>
                 {lastPing.statusCode && (
-                  <span className="text-xs opacity-70">{lastPing.statusCode}</span>
+                  <span className="text-xs opacity-70">
+                    {lastPing.statusCode}
+                  </span>
                 )}
               </div>
             ) : (
@@ -243,28 +323,51 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
         const bLatency = b.lastPing?.latency ?? 0;
         return aLatency - bLatency;
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search response time"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>
@@ -274,37 +377,64 @@ const WebsitesTable = ({ monitors, loading = false }: WebsitesTableProps) => {
       onFilter: (value, record) => {
         if (!record.lastPing) return false;
         const latencyStr = formatLatency(record.lastPing.latency);
-        const statusCodeStr = record.lastPing.statusCode ? String(record.lastPing.statusCode) : "";
-        return latencyStr.toLowerCase().includes(String(value).toLowerCase()) ||
-               statusCodeStr.includes(String(value));
+        const statusCodeStr = record.lastPing.statusCode
+          ? String(record.lastPing.statusCode)
+          : "";
+        return (
+          latencyStr.toLowerCase().includes(String(value).toLowerCase()) ||
+          statusCodeStr.includes(String(value))
+        );
       },
     },
     {
       title: "Status",
       key: "status",
       render: (_, record: Monitor) => getStatusBadge(record),
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
         <div style={{ padding: 8 }}>
           <Input
             placeholder="Search status (up/down/inactive)"
             value={selectedKeys[0]}
-            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onChange={(e) =>
+              setSelectedKeys(e.target.value ? [e.target.value] : [])
+            }
             onPressEnter={() => confirm()}
             style={{ marginBottom: 8, display: "block" }}
           />
           <div style={{ display: "flex", gap: 8 }}>
             <button
+              type="button"
               onClick={() => confirm()}
-              style={{ padding: "4px 8px", background: "#7d02e1", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#7d02e1",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Search
             </button>
             <button
+              type="button"
               onClick={() => {
                 clearFilters?.();
                 confirm();
               }}
-              style={{ padding: "4px 8px", background: "#1e1e1e", color: "#dedede", border: "1px solid #3f3f3f", borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                padding: "4px 8px",
+                background: "#1e1e1e",
+                color: "#dedede",
+                border: "1px solid #3f3f3f",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
               Reset
             </button>

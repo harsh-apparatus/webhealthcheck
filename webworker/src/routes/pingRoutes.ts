@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { type Request, type Response, Router } from "express";
 import { pingUrl } from "../services/pingService";
 
 const router = Router();
@@ -34,14 +34,15 @@ router.post("/ping", async (req: Request, res: Response) => {
     });
 
     return res.status(200).json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Ping route error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return res.status(500).json({
       error: "Internal server error",
-      detail: error.message,
+      detail: errorMessage,
     });
   }
 });
 
 export default router;
-

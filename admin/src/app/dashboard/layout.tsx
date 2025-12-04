@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Header from "@/components/header/Header";
-import Sidebar from "@/components/sidebar/Sidebar";
 import Loader from "@/components/loader/Loader";
 import Notification from "@/components/notification/Notification";
+import Sidebar from "@/components/sidebar/Sidebar";
 import { LoaderProvider, useLoader } from "@/contexts/LoaderContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import "react-tooltip/dist/react-tooltip.css";

@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import ButtonPrimary from "@/components/button/ButtonPrimary";
 import NoWebsiteCard from "@/components/noWebsiteCard/NoWebsiteCard";
 import WebsitesTable from "@/components/websitesTable/WebsitesTable";
-import { getMonitors, Monitor } from "@/lib/api/monitors";
-import { getAccountInfo, AccountInfoResponse } from "@/lib/api/account";
-import { ApiError } from "@/lib/api";
-import { useNotification } from "@/contexts/NotificationContext";
 import { useLoader } from "@/contexts/LoaderContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import type { ApiError } from "@/lib/api";
+import { type AccountInfoResponse, getAccountInfo } from "@/lib/api/account";
+import { getMonitors, type Monitor } from "@/lib/api/monitors";
 
 const page = () => {
   const { getToken } = useAuth();
@@ -17,23 +17,25 @@ const page = () => {
   const { setLoading } = useLoader();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(null);
+  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setLoading(true);
         const token = await getToken();
-        
+
         if (!token) {
           throw new Error("Authentication token not available");
         }
-        
+
         console.log("Fetching monitors and account info...");
-        
+
         // Fetch monitors and account info in parallel
         const [monitorsResponse, accountResponse] = await Promise.all([
           getMonitors(token),
@@ -42,9 +44,9 @@ const page = () => {
             return null;
           }),
         ]);
-        
+
         if (!isMounted) return;
-        
+
         console.log("Monitors fetched:", monitorsResponse.monitors.length);
         setMonitors(monitorsResponse.monitors);
         if (accountResponse) {
@@ -52,11 +54,13 @@ const page = () => {
         }
       } catch (err) {
         if (!isMounted) return;
-        
+
         console.error("Failed to fetch monitors:", err);
         const apiError = err as ApiError;
         const errorMessage =
-          apiError.error || apiError.detail || (err instanceof Error ? err.message : "Failed to fetch websites");
+          apiError.error ||
+          apiError.detail ||
+          (err instanceof Error ? err.message : "Failed to fetch websites");
         showNotification("Error", "error", errorMessage);
         // Ensure monitors is set to empty array on error
         setMonitors([]);
@@ -69,7 +73,7 @@ const page = () => {
     };
 
     fetchData();
-    
+
     return () => {
       isMounted = false;
     };
@@ -79,7 +83,9 @@ const page = () => {
   const currentCount = accountInfo?.limits.currentWebsites ?? monitors.length;
   const maxLimit = accountInfo?.limits.maxWebsites;
   const isUnlimited = maxLimit === null;
-  const usagePercentage = maxLimit ? Math.min((currentCount / maxLimit) * 100, 100) : 0;
+  const usagePercentage = maxLimit
+    ? Math.min((currentCount / maxLimit) * 100, 100)
+    : 0;
 
   return (
     <>
@@ -98,7 +104,10 @@ const page = () => {
                 <span className="text-white font-semibold">
                   {currentCount}
                   {!isUnlimited && (
-                    <span className="text-text/60 font-normal"> / {maxLimit}</span>
+                    <span className="text-text/60 font-normal">
+                      {" "}
+                      / {maxLimit}
+                    </span>
                   )}
                 </span>
               </div>

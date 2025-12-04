@@ -1,14 +1,14 @@
 "use client";
-import {
-  HiOutlineSquares2X2,
-  HiOutlineGlobeAlt,
-  HiOutlineCog,
-  HiOutlineDocumentText,
-  HiOutlineBell,
-} from "react-icons/hi2";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
+import {
+  HiOutlineBell,
+  HiOutlineCog,
+  HiOutlineDocumentText,
+  HiOutlineGlobeAlt,
+  HiOutlineSquares2X2,
+} from "react-icons/hi2";
 import Upgrade from "../upgrade/Upgrade";
 
 interface SidebarProps {
@@ -72,7 +72,7 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
               item.path === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname === item.path ||
-                  pathname.startsWith(item.path + "/");
+                  pathname.startsWith(`${item.path}/`);
 
             return (
               <Link

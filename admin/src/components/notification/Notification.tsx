@@ -1,7 +1,13 @@
 "use client";
 
+import {
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaExclamationTriangle,
+  FaInfoCircle,
+  FaTimes,
+} from "react-icons/fa";
 import { useNotification } from "@/contexts/NotificationContext";
-import { FaCheckCircle, FaExclamationCircle, FaExclamationTriangle, FaInfoCircle, FaTimes } from "react-icons/fa";
 
 const Notification = () => {
   const { notifications, removeNotification } = useNotification();
@@ -34,7 +40,6 @@ const Notification = () => {
           iconColor: "text-warning",
           icon: <FaExclamationTriangle className="text-warning" />,
         };
-      case "info":
       default:
         return {
           bg: "bg-gray",
@@ -60,7 +65,7 @@ const Notification = () => {
           >
             {/* Background layer with bg-gray */}
             <div className="absolute inset-0 bg-gray -z-10"></div>
-            
+
             {/* Gradient overlay */}
             <div
               className="absolute inset-0 -z-10"
@@ -68,7 +73,7 @@ const Notification = () => {
                 background: `linear-gradient(to right, ${config.gradientColor}20 0%, ${config.gradientColor}20 30%, transparent 30%, transparent 100%)`,
               }}
             ></div>
-            
+
             <div className="flex flex-row p-4 relative z-10">
               {/* Content Box */}
               <div className="flex flex-col flex-1 min-w-0 gap-2">
@@ -81,7 +86,7 @@ const Notification = () => {
                     {notification.title}
                   </h3>
                 </div>
-                
+
                 {/* Bottom: Description */}
                 {notification.description && (
                   <div className="pl-8">
@@ -91,10 +96,11 @@ const Notification = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Close Button Box */}
               <div className="shrink-0 flex items-start pl-3">
                 <button
+                  type="button"
                   onClick={() => removeNotification(notification.id)}
                   className="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
                   aria-label="Close notification"

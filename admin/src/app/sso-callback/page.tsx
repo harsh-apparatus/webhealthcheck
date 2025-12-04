@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 const SSOCallbackPage = () => {
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect_url");
+  const _redirectUrl = searchParams.get("redirect_url");
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -17,6 +17,8 @@ const SSOCallbackPage = () => {
             stroke="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="Warning icon"
           >
             <path
               strokeLinecap="round"
@@ -28,7 +30,8 @@ const SSOCallbackPage = () => {
         </div>
         <h1 className="h2 mb-4">Account Not Registered</h1>
         <p className="mb-6">
-          You have not registered this account yet. First do the signup then try to login.
+          You have not registered this account yet. First do the signup then try
+          to login.
         </p>
         <div className="flex flex-col gap-4">
           <Link href="/sign-up" className="btn-primary text-center">
@@ -47,4 +50,3 @@ const SSOCallbackPage = () => {
 };
 
 export default SSOCallbackPage;
-

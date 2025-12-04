@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import ButtonPrimary from "@/components/button/ButtonPrimary";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { updateMonitor, getMonitor, Monitor } from "@/lib/api/monitors";
-import { ApiError } from "@/lib/api";
+import ButtonPrimary from "@/components/button/ButtonPrimary";
 import Toggle from "@/components/toggle/Toggle";
-import { useNotification } from "@/contexts/NotificationContext";
 import { useLoader } from "@/contexts/LoaderContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import type { ApiError } from "@/lib/api";
+import { getMonitor, type Monitor, updateMonitor } from "@/lib/api/monitors";
 
 const page = () => {
   const { getToken } = useAuth();
@@ -41,12 +41,16 @@ const page = () => {
       try {
         const token = await getToken();
         if (!token) {
-          showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+          showNotification(
+            "Authentication Error",
+            "error",
+            "No authentication token available. Please sign in.",
+          );
           router.push("/dashboard/websites");
           return;
         }
 
-        const data = await getMonitor(parseInt(monitorId), token);
+        const data = await getMonitor(parseInt(monitorId, 10), token);
         setMonitor(data.monitor);
         setFormData({
           name: data.monitor.name,
@@ -55,7 +59,8 @@ const page = () => {
         });
       } catch (err) {
         const apiError = err as ApiError;
-        const errorMessage = apiError.error || apiError.detail || "Failed to load monitor data";
+        const errorMessage =
+          apiError.error || apiError.detail || "Failed to load monitor data";
         showNotification("Failed to load monitor", "error", errorMessage);
         console.error("API Error:", err);
         router.push("/dashboard/websites");
@@ -76,7 +81,11 @@ const page = () => {
       const token = await getToken();
 
       if (!token) {
-        showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+        showNotification(
+          "Authentication Error",
+          "error",
+          "No authentication token available. Please sign in.",
+        );
         setLocalLoading(false);
         setLoading(false);
         return;
@@ -91,21 +100,28 @@ const page = () => {
 
       // Use the API service
       await updateMonitor(
-        parseInt(monitorId),
+        parseInt(monitorId, 10),
         {
           name: formData.name,
           url: formData.url,
           isHttps: formData.isHttps,
         },
-        token
+        token,
       );
 
-      showNotification("Changes saved", "success", "Website monitor updated successfully!");
+      showNotification(
+        "Changes saved",
+        "success",
+        "Website monitor updated successfully!",
+      );
       // Navigate back to websites list
       router.push("/dashboard/websites");
     } catch (err) {
       const apiError = err as ApiError;
-      const errorMessage = apiError.error || apiError.detail || "An error occurred while updating the monitor";
+      const errorMessage =
+        apiError.error ||
+        apiError.detail ||
+        "An error occurred while updating the monitor";
       showNotification("Failed to update monitor", "error", errorMessage);
       console.error("API Error:", err);
     } finally {
@@ -145,7 +161,10 @@ const page = () => {
       </div>
 
       <div className="card p-6">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-start">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 items-start"
+        >
           <div className="flex flex-col gap-2 w-full">
             <label htmlFor="name">
               Website Name <span>*</span>

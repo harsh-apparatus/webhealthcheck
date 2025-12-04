@@ -1,5 +1,4 @@
-import React from 'react'
-import ButtonPrimary from '../button/ButtonPrimary'
+import ButtonPrimary from "../button/ButtonPrimary";
 
 const NoWebsiteCard = () => {
   return (
@@ -12,7 +11,7 @@ const NoWebsiteCard = () => {
         link="/dashboard/websites/add"
       />
     </div>
-  )
-}
+  );
+};
 
-export default NoWebsiteCard
+export default NoWebsiteCard;

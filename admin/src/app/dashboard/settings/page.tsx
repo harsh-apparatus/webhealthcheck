@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { getAccountInfo, AccountInfoResponse } from "@/lib/api/account";
-import { ApiError } from "@/lib/api";
-import { useNotification } from "@/contexts/NotificationContext";
-import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { HiOutlineSignal } from "react-icons/hi2";
+import { useNotification } from "@/contexts/NotificationContext";
+import type { ApiError } from "@/lib/api";
+import { type AccountInfoResponse, getAccountInfo } from "@/lib/api/account";
 
 const page = () => {
   const { getToken } = useAuth();
   const { showNotification } = useNotification();
-  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [accountInfo, setAccountInfo] = useState<AccountInfoResponse | null>(
+    null,
+  );
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
@@ -20,7 +22,11 @@ const page = () => {
         setLoading(true);
         const token = await getToken();
         if (!token) {
-          showNotification("Authentication Error", "error", "No authentication token available. Please sign in.");
+          showNotification(
+            "Authentication Error",
+            "error",
+            "No authentication token available. Please sign in.",
+          );
           return;
         }
 
@@ -28,7 +34,10 @@ const page = () => {
         setAccountInfo(accountData);
       } catch (err) {
         const apiError = err as ApiError;
-        const errorMessage = apiError.error || apiError.detail || "Failed to fetch account information";
+        const errorMessage =
+          apiError.error ||
+          apiError.detail ||
+          "Failed to fetch account information";
         showNotification("Error", "error", errorMessage);
         console.error("Failed to fetch account info:", err);
       } finally {
@@ -39,7 +48,9 @@ const page = () => {
     fetchAccountInfo();
   }, [getToken, showNotification]);
 
-  const isProAccount = accountInfo?.subscription.plan === "PRO" || accountInfo?.subscription.plan === "ENTERPRISE";
+  const isProAccount =
+    accountInfo?.subscription.plan === "PRO" ||
+    accountInfo?.subscription.plan === "ENTERPRISE";
   const hasStatusPageAccess = accountInfo?.limits.publicStatusPage || false;
 
   return (
@@ -58,7 +69,9 @@ const page = () => {
               </div>
               <div>
                 <h3 className="text-white font-semibold">Status Pages</h3>
-                <p className="text-text/60 text-sm">Public status pages are enabled for your account</p>
+                <p className="text-text/60 text-sm">
+                  Public status pages are enabled for your account
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -86,7 +99,7 @@ const page = () => {
         <p className="text-text/60 text-sm mb-6">
           Irreversible and destructive actions. Please proceed with caution.
         </p>
-        
+
         <div className="space-y-4">
           {/* Add destructive actions here in the future */}
           <div className="p-4 bg-background-secondary rounded border border-border">
@@ -94,10 +107,12 @@ const page = () => {
               <div>
                 <h3 className="text-white font-medium mb-1">Delete Account</h3>
                 <p className="text-text/60 text-sm">
-                  Permanently delete your account and all associated data. This action cannot be undone.
+                  Permanently delete your account and all associated data. This
+                  action cannot be undone.
                 </p>
               </div>
               <button
+                type="button"
                 className="px-4 py-2 bg-error/20 hover:bg-error/30 border border-error/50 text-error rounded transition-colors"
                 disabled
               >
