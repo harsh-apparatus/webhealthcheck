@@ -11,12 +11,16 @@ const SignupSuccessPage = () => {
   const { user } = useUser();
   const router = useRouter();
 
-  const jsConfetti = new JSConfetti();
-
-  jsConfetti.addConfetti({
-    confettiRadius: 6,
-    confettiNumber: 100,
-  });
+  useEffect(() => {
+    // Only run confetti on client side
+    if (typeof window !== "undefined") {
+      const jsConfetti = new JSConfetti();
+      jsConfetti.addConfetti({
+        confettiRadius: 6,
+        confettiNumber: 100,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     // If not signed in, redirect to sign-in

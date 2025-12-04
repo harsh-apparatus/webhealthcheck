@@ -21,6 +21,7 @@ export interface Monitor {
   createdAt: string;
   updatedAt: string;
   lastPing: LastPing | null;
+  [key: string]: unknown;
 }
 
 export interface CreateMonitorRequest {
@@ -144,6 +145,7 @@ export interface MonitorLog {
   status: "up" | "down";
   bodySnippet: string | null;
   timestamp: string;
+  [key: string]: unknown;
 }
 
 export interface MonitorLogsResponse {

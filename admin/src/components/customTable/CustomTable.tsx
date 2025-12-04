@@ -28,7 +28,6 @@ function CustomTable<T extends Record<string, unknown>>({
   className = "",
   enablePagination = true,
   currentPage,
-  _totalPages,
   total,
   onPageChange,
 }: CustomTableProps<T>) {

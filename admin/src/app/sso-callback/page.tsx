@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-const SSOCallbackPage = () => {
+const SSOCallbackContent = () => {
   const searchParams = useSearchParams();
   const _redirectUrl = searchParams.get("redirect_url");
 
@@ -46,6 +47,20 @@ const SSOCallbackPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const SSOCallbackPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="card-highlight max-w-md w-full mx-4 p-8 text-center">
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <SSOCallbackContent />
+    </Suspense>
   );
 };
 

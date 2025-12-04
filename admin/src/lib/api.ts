@@ -27,9 +27,9 @@ export class ApiClient {
   ): Promise<T> {
     const { token, timeout = 30000, ...fetchOptions } = options;
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...fetchOptions.headers,
+      ...(fetchOptions.headers as Record<string, string>),
     };
 
     if (token) {
@@ -45,7 +45,7 @@ export class ApiClient {
     try {
       const response = await fetch(url, {
         ...fetchOptions,
-        headers,
+        headers: headers as HeadersInit,
         signal: controller.signal,
       });
 

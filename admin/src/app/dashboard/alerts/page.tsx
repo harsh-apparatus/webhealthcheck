@@ -21,6 +21,7 @@ import {
 interface AlertLog extends MonitorLog {
   monitorName: string;
   monitorUrl: string;
+  [key: string]: unknown;
 }
 
 const page = () => {
